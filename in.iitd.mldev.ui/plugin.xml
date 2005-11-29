@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="in.iitd.mldev.ui"
+   name="ML-Dev UI Plug-in"
+   version="0.1.1"
+   provider-name="Rahul Narain"
+   class="in.iitd.mldev.ui.SmlUiPlugin">
+
+   <runtime>
+      <library name="ui.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="in.iitd.mldev.core"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            name="SML Editor"
+            extensions="sml, sig, fun"
+            icon="icons/file.gif"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            class="in.iitd.mldev.ui.editor.SmlEditor"
+            id="in.iitd.mldev.ui.SmlEditor">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            extensions="sml, sig, fun"
+            class="in.iitd.mldev.ui.editor.SmlDocumentSetupParticipant">
+      </participant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="SML"
+            class="in.iitd.mldev.ui.preferences.SmlMainPreferencePage"
+            id="in.iitd.mldev.ui.SmlMainPreferencePage">
+      </page>
+   </extension>
+
+</plugin>

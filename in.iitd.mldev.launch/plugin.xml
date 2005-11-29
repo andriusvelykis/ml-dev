@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin
+   id="in.iitd.mldev.launch"
+   name="ML-Dev Launch Plug-in"
+   version="0.1.1"
+   provider-name="Rahul Narain"
+   class="in.iitd.mldev.launch.SmlLaunchPlugin">
+
+   <runtime>
+      <library name="launch.jar">
+         <export name="*"/>
+      </library>
+   </runtime>
+
+   <requires>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.debug.ui"/>
+      <import plugin="org.eclipse.jface"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui"/>
+   </requires>
+
+   <extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            name="SML"
+            delegate="in.iitd.mldev.launch.SmlLaunchDelegate"
+            modes="run"
+            id="in.iitd.mldev.launch.SmlLaunchType">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            type="in.iitd.mldev.launch.SmlLaunchType"
+            class="in.iitd.mldev.launch.ui.SmlLaunchTabGroup"
+            id="in.iitd.mldev.launch.SmlLaunchTabGroup">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            icon="icons/launch.gif"
+            configTypeID="in.iitd.mldev.launch.SmlLaunchType"
+            id="in.iitd.mldev.launch.SmlLaunchTypeImage">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="Run"
+            category="in.iitd.mldev.ui.SmlMainPreferencePage"
+            class="in.iitd.mldev.launch.ui.SmlLaunchPreferencePage"
+            id="in.iitd.mldev.launch.SmlLaunchPreferencePage">
+      </page>
+   </extension>
+
+</plugin>

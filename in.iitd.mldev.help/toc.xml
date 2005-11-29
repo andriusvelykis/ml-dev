@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<toc label="ML-Dev User Guide">
+    <topic label="Getting started"
+        href="html/gettingstarted.html">
+        <topic label="Creating a new project"
+            href="html/gettingstarted.html#project"/>
+        <topic label="Creating new files"
+            href="html/gettingstarted.html#newfiles"/>
+        <topic label="Importing existing files into Eclipse"
+            href="html/gettingstarted.html#importing"/>
+    </topic>
+    <topic label="Editing SML in Eclipse"
+        href="html/editing.html">
+        <topic label="The SML editor"
+            href="html/editing.html#editor"/>
+        <topic label="The outline view"
+            href="html/editing.html#outline"/>
+    </topic>
+    <topic label="Running programs"
+        href="html/running.html">
+        <topic label="Preparing Eclipse to run SML"
+            href="html/running.html#preparing"/>
+        <topic label="Running a file"
+            href="html/running.html#file"/>
+        <topic label="Running a CM-based program"
+            href="html/running.html#cm"/>
+    </topic>
+    <topic label="Preferences"
+        href="html/preferences.html"/>
+</toc>

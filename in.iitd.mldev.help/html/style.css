@@ -1,0 +1,48 @@
+body {
+    background: white;
+    color: black;
+    margin: 1em 2em;
+    font: 0.8em Helvetica, Arial, "Nimbus Sans", sans-serif;
+    padding-bottom: 0.5em;}
+
+h1 {
+    font-size: 2em;
+    font-weight: normal;}
+
+h2 {
+    font-size: 1.5em;
+    font-weight: normal;
+    margin-top: 1.5em;}
+h2 a {
+    border-top: 1em solid white;}
+
+ul, ol {
+    margin-left: 2.5em;
+    padding: 0;}
+li {
+    margin: 0.5em 0;}
+
+img {
+    display: block;
+    margin: 0.5em 0;}
+
+tt, code, kbd, samp {
+    font: 1em "Courier 10 Pitch", "Courier New", Courier, monospace;
+    word-spacing: -0.2em;}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    font-size: 1em;
+    margin: 1em 0;}
+td, th {
+    vertical-align: top;
+    text-align: left;
+    border: 1px solid black;
+    margin: 0;
+    padding: 0;}
+th {
+    width: 25%;
+    padding: 0.5em 1em;}
+td p {
+    margin: 0.5em 1em;}

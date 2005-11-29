@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+<title>ML-Dev User Guide: Running programs</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+
+<body>
+
+<h1>Running programs</h1>
+
+<h2><a name="preparing">Preparing Eclipse to run SML</a></h2>
+
+<p>
+Before Eclipse can run any SML program, there are a few things you need to set up. This only needs to be done once.
+</p>
+
+<ol>
+<li>By default, the capability for running programs may be hidden. To enable it, go to <b>Window &gt; Customize Perspective...</b></li>
+<li>In the <b>Commands</b> tab, enable <b>Launch</b> in the list of available command groups.
+<img src="images/customize.png" alt="">
+</li>
+</ol>
+
+<p>
+You also have to specify where SML is installed on your system.
+</p>
+
+<ol>
+<li>From the menu, select <b>Window &gt; Preferences</b> to open the Preferences dialog box. Select <b>SML &gt; Run</b> in the left panel to show the SML Run preference page.</li>
+<li>Specify the location of the SML executable. (If you're using SML/NJ, it's usually at <tt>C:\sml\bin\sml.bat</tt> in Windows. In Linux, you can find its path by typing "<kbd>which sml</kbd>" at a command prompt.)
+<img src="images/executable.png" alt="">
+</li>
+</ol>
+
+<p>
+Now Eclipse is ready to run your SML programs.
+</p>
+
+<h2><a name="file">Running a file</a></h2>
+
+<ol>
+<li>Select <b>Run &gt; Run...</b> from the menu bar. In the Run dialog box that opens, select <b>SML</b> from the list on the left, and click <b>New</b> below.</li>
+<li>At the top, enter a suitable name for the file you are going to run. This does not need to be the same as its filename.</li>
+<li>Enter the name of the project that the file is in, and the path of the file relative to the project. Make sure the <b>SML file</b> radio button is selected.
+<img src="images/running.png" alt="">
+</li>
+<li>Click <b>Run</b> to run the program.</li>
+</ol>
+
+<p>
+SML will start running in the Console window at the bottom of the workbench. Your file will automatically be loaded into SML, and then you will get the SML prompt where you can start using the program. To close it, right-click on the console and select <b>Terminate</b>.
+</p>
+
+<img src="images/running2.png" alt="">
+
+<p>
+Eclipse saves the information you entered in the Run dialog box as a <dfn>launch configuration</dfn>. The next time you want to run the program, its location will already be saved. To run a different program, you can create another launch configuration for it. All the launch configurations are listed under SML in the left panel of the Run dialog box.
+</p>
+
+<h2><a name="cm">Running a CM-based program</a></h2>
+
+<p>
+Running a program using SML/NJ's Compilation Manager (CM) is not very different from running a single file. But first, since the command to invoke CM varies in different versions of SML/NJ, you have to specify which command should be used.
+</p>
+
+<ol>
+<li>Open the Preferences dialog box and go to <b>SML &gt; Run</b> again.</li>
+<li>Choose the command you want to use for running CM. Select the first, <tt>CM.make()</tt>, if you aren't sure.</li>
+</ol>
+
+<p>
+Now, to run a program using CM, you only have to specify the CM description file (the file with the <tt>.cm</tt> extension) in the Run dialog box, and select the <b>CM description file</b> radio button instead of <b>SML file</b>. The program can then be run as usual.
+</p>
+
+<p>
+
+</p>
+
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+
+<head>
+<title>ML-Dev User Guide: Editing SML in Eclipse</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+
+<body>
+
+<h1>Editing SML in Eclipse</h1>
+
+<h2><a name="editor">The SML editor</a></h2>
+
+<p>
+The SML editor opens on files which have an SML-specific extension (<tt>sml</tt>, <tt>sig</tt> or <tt>fun</tt>). It performs syntax highlighting on the file, showing SML keywords, strings, and comments in different colours. (These colours can be changed from the <a href="preferences.html">preferences</a>.) Bracket matching is supported: if the cursor is on a bracket, its matching bracket is highlighted.
+</p>
+
+<p>
+The program code is periodically parsed to find syntax errors. Each error is indicated by a wavy red underline under the offending token, as well as red error markers in the left and right margins.
+</p>
+
+<img src="images/editor.png" alt="">
+
+<p>
+<b>Note:</b> There is a bug in the parser, it sometimes marks errors where there aren't any. Separating declarations with semicolons fixes the problem. If you don't want to do that, you can disable errors marking in the preferences.
+</p>
+
+<h2><a name="outline">The outline view</a></h2>
+
+<p>
+The outline view, to the side of the editor, displays an outline of the program's contents. Different icons represent different kinds of declarations, like variables, types, structures, etc. The outline groups related elements together; for example, constructors are grouped under their datatypes. The outline updates automatically while you edit the program.
+</p>
+
+<img src="images/outline.png" alt="">
+
+<p>
+The outline view makes it easy to navigate large files. At any time, the element at the cursor's position in the SML editor is highlighted in the outline. Clicking on any element there will take you directly to its declaration in the editor.
+</p>
+
+</body>
+
+</html>
