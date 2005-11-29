@@ -1,0 +1,720 @@
+/** 
+ * Standard ML grammar
+ * 
+ * for a *customised* version of CUP v0.10k
+ * (http://www.cs.princeton.edu/~appel/modern/java/CUP)
+ * modified to produce left and right offsets of the region matching
+ * the entire production, not just individual terminals/nonterminals.
+ */
+
+package in.iitd.mldev.core.parse;
+
+import in.iitd.mldev.core.parse.ast.*;
+import java.util.List;
+import java.util.ArrayList;
+
+action code {:
+	/** Returns an empty list. */
+	private List list () {return new ArrayList();}
+	/** Returns a list containing only the given object. */
+	private List list (Object o) {List l = list(); append(l,o); return l;}
+	/** Appends the given object to the end of the list. */
+	private List append (List l, Object o) {l.add(o); return l;}
+	/** Prepends the given object to the beginning of the list. */
+	private List prepend (Object o, List l) {l.add(0,o); return l;}
+	/** Concatenates two lists. */
+	private List concat (List l1, List l2) {l1.addAll(l2); return l1;}
+	
+:}
+
+parser code {:
+	/** List of parse errors. */
+	public List parseErrors;
+	/** This method is called when a syntax error has been detected
+	 * and recovery is about to be invoked. This parser adds
+	 * the offending token to the parseErrors list. */
+	public void syntax_error (java_cup.runtime.Symbol token) {
+		parseErrors.add(token);
+	}
+:}
+
+init with {:
+	parseErrors = new ArrayList();
+:}
+
+// Terminals
+
+	terminal String ID, TYVAR;
+	terminal Integer INT;
+	terminal Float REAL;
+	terminal String STRING, CHAR;
+
+	terminal ABSTYPE, AND, ANDALSO, AS, CASE, DATATYPE, DO,
+		ELSE, END, EQTYPE, EXCEPTION, FN, FUN, FUNCTOR, FUNSIG, HANDLE,
+		IF, IN, INCLUDE, INFIX, INFIXR, LAZY, LET, LOCAL, NONFIX,
+		OF, OP, OPEN, ORELSE, RAISE, REC, SHARING, SIG, SIGNATURE,
+		STRUCT, STRUCTURE, THEN, TYPE, VAL, WHERE, WHILE, WITH, WITHTYPE;
+
+	terminal LPAREN, RPAREN, LBRACKET, LVECTOR, RBRACKET, LBRACE, RBRACE,
+		DOT, COMMA, COLON, COLONGT, SEMIC, DOTDOTDOT, UNDER, BAR, EQUALS,
+		DARROW, ARROW, HASH, ASTERISK;
+	
+// Non-terminals
+
+	nonterminal ASTRoot sml;
+
+	nonterminal Ident ident, ident1, ident2, tyvar, tycon,
+		qident, qident1, qident2, longident2;
+	nonterminal Exp exp, atexp;
+	nonterminal Label label;
+	nonterminal Match match;
+	nonterminal Dec dec, topdec;
+	nonterminal List valbind, recvalbind, funbind, typebind,
+		datatypebind, conbind, exnbind;
+	nonterminal List clauses;
+	nonterminal Pat pat, atpat;
+	nonterminal Field expfield, patfield, typefield;
+	nonterminal Type type, attype;
+	nonterminal Fixity fixity;
+	
+	nonterminal Str str, fctarg;
+	nonterminal Sig sig;
+	nonterminal Dec strdec, strdec_;
+	nonterminal List strbind, sigbind, fctbind, funsigbind;
+	nonterminal Spec spec;
+	
+	nonterminal op_;
+	nonterminal Type constraint;
+
+	nonterminal String id1, id2;
+	nonterminal List qidents1, idents2, tyvars, tyvarseq, qualifier,
+		exprecord, expseq, exps, appexp,
+		rules, decs,
+		patrecord, pats, atpats, orpat,
+		typerecord, typetuple, types,
+		strdecs, strdecs_, fctargs,
+		wherespecs, specs,
+		strdesc, fctdesc, typedesc, valdesc, exndesc, sharingdesc,
+		patheqn, paramdescs,
+		topdecs;
+	nonterminal Desc paramdesc;
+
+// Precedences
+
+	precedence nonassoc WITHTYPE;
+	precedence left AND;
+	precedence right ARROW;
+	precedence right DARROW;
+	precedence right BAR;
+	precedence left DO;
+	precedence left ELSE;
+	precedence left RAISE;
+	precedence right HANDLE;
+	precedence left ORELSE;
+	precedence left ANDALSO;
+	precedence right AS;
+	precedence right COLON;
+
+// Grammar
+
+	sml ::= topdecs:ds {: RESULT = new ASTRoot(ds) .mark(left,right); :};
+
+	// Basic rules
+	
+	id1 ::=
+		ID:id {: RESULT = id; :} |
+		ASTERISK {: RESULT = "*"; :};
+	id2 ::=
+		ID:id {: RESULT = id; :} |
+		ASTERISK {: RESULT = "*"; :} |
+		EQUALS {: RESULT = "="; :};
+
+	ident ::= ID:id {: RESULT = new Ident(id) .mark(left,right); :};
+	ident1 ::= id1:id {: RESULT = new Ident(id) .mark(left,right); :};
+	ident2 ::= id2:id {: RESULT = new Ident(id) .mark(left,right); :};
+
+	tyvar ::= TYVAR:tv {: RESULT = new Ident(tv) .mark(left,right); :};
+
+	qualifier ::=
+			{: RESULT = list(); :} |
+		qualifier:q ID:id DOT {: RESULT = prepend(id,q); :};
+	
+	qident ::= qualifier:q ID:id {: RESULT = new Ident(q,id) .mark(left,right); :};
+	qident1 ::= qualifier:q id1:id {: RESULT = new Ident(q,id) .mark(left,right); :};
+	qident2 ::= qualifier:q id2:id {: RESULT = new Ident(q,id) .mark(left,right); :};
+	longident2 ::= ID:id1 DOT qualifier:q id2:id2 {: RESULT = new Ident(append(q,id1),id2) .mark(left,right); :};
+
+	qidents1 ::=
+		qident1:id {: RESULT = list(id); :} |
+		qidents1:ids qident1:id {: RESULT = append(ids,id); :};
+
+	idents2 ::=
+		ident2:id {: RESULT = list(id); :} |
+		idents2:ids ident2:id {: RESULT = append(ids,id); :};
+	
+	tyvars ::=
+			{: RESULT = list(); :} |
+		tyvar:tv {: RESULT = list(tv); :} |
+		LPAREN tyvarseq:tvs RPAREN {: RESULT = tvs; :};
+	
+	tyvarseq ::=
+		tyvar:tv {: RESULT = list(tv); :} |
+		tyvarseq:tvs COMMA tyvar:tv {: RESULT = append(tvs,tv); :};
+
+	constraint ::=
+		{: RESULT = null; :} |
+		COLON type:t {: RESULT = t; :};
+	
+	op_ ::= | OP;
+
+	// Expressions
+
+	atexp ::=
+		ident2:id
+			{: RESULT = new VarExp(id) .mark(left,right); :} |
+		OP ident2:id
+			{: RESULT = new VarExp(id, true) .mark(left,right); :} |
+		longident2:id
+			{: RESULT = new VarExp(id) .mark(left,right); :} |
+		INT:i
+			{: RESULT = new IntExp(i) .mark(left,right); :} |
+		REAL:r
+			{: RESULT = new RealExp(r) .mark(left,right); :} |
+		STRING:s
+			{: RESULT = new StringExp(s) .mark(left,right); :} |
+		CHAR:c
+			{: RESULT = new CharExp(c) .mark(left,right); :} |
+		HASH label:l
+			{: RESULT = new SelectorExp(l) .mark(left,right); :} |
+		LBRACE exprecord:er RBRACE
+			{: RESULT = new RecordExp(er) .mark(left,right); :} |
+		LBRACE RBRACE
+			{: RESULT = new RecordExp() .mark(left,right); :} |
+		LPAREN RPAREN
+			{: RESULT = new UnitExp() .mark(left,right); :} |
+		LPAREN exp:e RPAREN
+			{: RESULT = e .mark(left,right); :} |
+		LPAREN expseq:es RPAREN
+			{: RESULT = new SeqExp(es) .mark(left,right); :} |
+		LPAREN exp:e COMMA exps:es RPAREN
+			{: RESULT = new TupleExp(prepend(e,es)) .mark(left,right); :} |
+		LBRACKET exps:es RBRACKET
+			{: RESULT = new ListExp(es) .mark(left,right); :} |
+		LBRACKET RBRACKET
+			{: RESULT = new ListExp() .mark(left,right); :} |
+		LVECTOR exps:es RBRACKET
+			{: RESULT = new VectorExp(es) .mark(left,right); :} |
+		LVECTOR RBRACKET
+			{: RESULT = new VectorExp() .mark(left,right); :} |
+		LET decs:ds IN exp:e END
+			{: RESULT = new LetExp(ds,e) .mark(left,right); :} |
+		LET decs:ds IN expseq:es END
+			{: RESULT = new LetExp(ds, new SeqExp(es).mark(esleft,esright)) .mark(left,right); :};
+
+	label ::=
+		ident1:id {: RESULT = new IdentLabel(id) .mark(left,right); :} |
+		INT:i {: RESULT = new IntLabel(i) .mark(left,right); :};
+
+	exprecord ::=
+		expfield:f {: RESULT = list(f); :} |
+		exprecord:r COMMA expfield:f {: RESULT = append(r,f); :};
+				
+	expfield ::= label:l EQUALS exp:e {: RESULT = new ExpField(l,e) .mark(left,right); :};
+
+	expseq ::=
+		exp:e1 SEMIC exp:e2 {: RESULT = append(list(e1),e2); :} |
+		expseq:s SEMIC exp:e {: RESULT = append(s,e); :};
+
+	exps ::=
+		exp:e {: RESULT = list(e); :} |
+		exps:es COMMA exp:e {: RESULT = append(es,e); :};
+
+	appexp ::=
+		atexp:e {: RESULT = list(e); :} |
+		appexp:ae atexp:e {: RESULT = append(ae,e); :};
+
+	exp ::=
+		exp:e HANDLE match:m
+			{: RESULT = new HandleExp(e, m) .mark(left,right); :} |
+		exp:e1 ORELSE exp:e2
+			{: RESULT = new OrelseExp(e1,e2) .mark(left,right); :} |
+		exp:e1 ANDALSO exp:e2
+			{: RESULT = new AndalsoExp(e1,e2) .mark(left,right); :} |
+		exp:e COLON type:t
+			{: RESULT = new TypedExp(e,t) .mark(left,right); :} |
+		appexp:ae
+			{: RESULT = new FlatAppExp(ae) .mark(left,right); :} |
+		FN match:m
+			{: RESULT = new FnExp(m) .mark(left,right); :} |
+		CASE exp:e OF match:m
+			{: RESULT = new CaseExp(e,m) .mark(left,right); :} |
+		WHILE exp:e1 DO exp:e2
+			{: RESULT = new WhileExp(e1,e2) .mark(left,right); :} |
+		IF exp:e1 THEN exp:e2 ELSE exp:e3
+			{: RESULT = new IfExp(e1,e2,e3) .mark(left,right); :} |
+		RAISE exp:e
+			{: RESULT = new RaiseExp(e) .mark(left,right); :} |
+		error
+			{: RESULT = new ErrorExp() .mark(left,right); :};
+
+	// Matches
+
+	match ::= rules:rs {: RESULT = new Match(rs) .mark(left,right); :};
+
+	rules ::=
+		pat:p DARROW exp:e
+			{: RESULT = list(new Rule(p,e) .mark(left,right)); :} |
+		rules:r1 BAR rules:r2
+			{: RESULT = concat(r1,r2); :};
+
+	// Declarations
+
+	decs ::=
+
+			{: RESULT = list(); :} |
+		LOCAL decs:ds1 IN decs:ds2 END
+			{: RESULT = list(new LocalDec(ds1,ds2) .mark(left,right)); :} |
+		decs:ds dec:d
+			{: RESULT = append(ds,d); :} |
+		decs:ds error:e
+			{: RESULT = append(ds, new ErrorDec() .mark(eleft,eright)); :} |
+		decs:ds SEMIC
+			{: RESULT = ds; :};
+
+	dec ::=
+		VAL valbind:vb
+			{: RESULT = new ValDec(vb) .mark(left,right); :} |
+		VAL tyvarseq:tvs valbind:vb
+			{: RESULT = new ValDec(vb,tvs) .mark(left,right); :} |
+		VAL REC recvalbind:rvb
+			{: RESULT = new RecValDec(rvb) .mark(left,right); :} |
+		VAL REC tyvarseq:tvs recvalbind:rvb
+			{: RESULT = new RecValDec(rvb,tvs) .mark(left,right); :} |
+		FUN funbind:fb
+			{: RESULT = new FunDec(fb) .mark(left,right); :} |
+		TYPE typebind:tb
+			{: RESULT = new TypeDec(tb) .mark(left,right); :} |
+		DATATYPE datatypebind:db
+			{: RESULT = new DatatypeDec(db) .mark(left,right); :} |
+		DATATYPE datatypebind:db WITHTYPE typebind:tb
+			{: RESULT = new DatatypeDec(db,tb) .mark(left,right); :} |
+		ABSTYPE datatypebind:db WITH decs:ds END
+			{: RESULT = new AbstypeDec(db,ds) .mark(left,right); :} |
+		ABSTYPE datatypebind:db WITHTYPE typebind:tb WITH decs:ds END
+			{: RESULT = new AbstypeDec(db,tb,ds) .mark(left,right); :} |
+		EXCEPTION exnbind:eb
+			{: RESULT = new ExnDec(eb) .mark(left,right); :} |
+		OPEN qidents1:ids
+			{: RESULT = new OpenDec(ids) .mark(left,right); :} |
+		fixity:f idents2:ids
+			{: RESULT = new FixityDec(f,ids) .mark(left,right); :};
+			
+
+	valbind ::=
+		pat:p EQUALS exp:e
+			{: RESULT = list(new ValBind(p,e) .mark(left,right)); :} |
+		LAZY pat:p EQUALS exp:e
+			{: RESULT = list(new ValBind(p,e,true) .mark(left,right)); :} |
+		valbind:vb1 AND valbind:vb2
+			{: RESULT = concat(vb1,vb2); :};
+	
+	recvalbind ::=
+		op_ ident1:id constraint:c EQUALS exp:e
+			{: RESULT = list(new RecValBind(id,c,e) .mark(left,right)); :} |
+		LAZY op_ ident1:id constraint:c EQUALS exp:e
+			{: RESULT = list(new RecValBind(id,c,e,true) .mark(left,right)); :} |
+		recvalbind:vb1 AND recvalbind:vb2
+			{: RESULT = concat(vb1,vb2); :};
+	
+	funbind ::=
+		clauses:cs
+			{: RESULT = list(new FunBind(cs) .mark(left,right)); :} |
+		LAZY clauses:cs
+			{: RESULT = list(new FunBind(cs,true) .mark(left,right)); :} |
+		funbind:fb1 AND funbind:fb2
+			{: RESULT = concat(fb1,fb2); :};
+	
+	clauses ::=
+		atpats:ps constraint:c EQUALS exp:e
+			{: RESULT = list(new Clause(ps,c,e) .mark(left,right)); :} |
+		clauses:c1 BAR clauses:c2
+			{: RESULT = concat(c1,c2); :};
+	
+	typebind ::=
+		tyvars:tvs ident:id EQUALS type:t
+			{: RESULT = list(new TypeBind(tvs,id,t) .mark(left,right)); :} |
+		typebind:tb1 AND typebind:tb2
+			{: RESULT = concat(tb1,tb2); :};
+	
+	datatypebind ::=
+		tyvars:tvs ident:id EQUALS conbind:cbs
+			{: RESULT = list(new DatatypeBind(tvs,id,cbs) .mark(left,right)); :} |
+		LAZY tyvars:tvs ident:id EQUALS conbind:cbs
+			{: RESULT = list(new DatatypeBind(tvs,id,cbs,true) .mark(left,right)); :} |
+		tyvars:tvs ident:id EQUALS DATATYPE tycon:tc
+			{: RESULT = list(new DatatypeBind(tvs,id,tc) .mark(left,right)); :} |
+		LAZY tyvars:tvs ident:id EQUALS DATATYPE tycon:tc
+			{: RESULT = list(new DatatypeBind(tvs,id,tc,true) .mark(left,right)); :} |
+		datatypebind:db1 AND datatypebind:db2
+			{: RESULT = concat(db1,db2); :};
+	
+	conbind ::=
+		op_ ident2:id
+			{: RESULT = list(new ConBind(id) .mark(left,right)); :} |
+		op_ ident2:id OF type:t
+			{: RESULT = list(new ConBind(id,t) .mark(left,right)); :} |
+		conbind:cb1 BAR conbind:cb2
+			{: RESULT = concat(cb1,cb2); :};
+	
+	exnbind ::=
+		op_ ident2:id
+			{: RESULT = list(new ExnBind(id) .mark(left,right));
+				id.mark(idleft,idright); :} |
+		op_ ident2:id OF type:t
+			{: RESULT = list(new ExnBind(id,t) .mark(left,right)); 
+				id.mark(idleft, idright); t.mark(tleft,tright); :} |
+		op_ ident2:id1 EQUALS qident2:id2
+			{: RESULT = list(new ExnBind(id1,id2) .mark(left,right));
+				id1.mark(id1left,id1right); id2.mark(id2left,id2right); :} |
+		exnbind:eb1 AND exnbind:eb2
+			{: RESULT = concat(eb1,eb2); :};
+
+	fixity ::=
+		INFIX {: RESULT = new Fixity(Fixity.LEFT) .mark(left,right); :} |
+		INFIX INT:i {: RESULT = new Fixity(Fixity.LEFT, i) .mark(left,right); :} |
+		INFIXR {: RESULT = new Fixity(Fixity.RIGHT) .mark(left,right); :} |
+		INFIXR INT:i {: RESULT = new Fixity(Fixity.RIGHT, i) .mark(left,right); :} |
+		NONFIX {: RESULT = new Fixity(Fixity.NONE) .mark(left,right); :};
+			
+	// Patterns
+
+	atpat ::=
+		ident1:id
+			{: RESULT = new VarPat(id) .mark(left,right); :} |
+		OP ident2:id
+			{: RESULT = new VarPat(id, true) .mark(left,right); :} |
+		longident2:id
+			{: RESULT = new VarPat(id) .mark(left,right); :} |
+		INT:i
+			{: RESULT = new IntPat(i) .mark(left,right); :} |
+		STRING:s
+			{: RESULT = new StringPat(s) .mark(left,right); :} |
+		CHAR:c
+			{: RESULT = new CharPat(c) .mark(left,right); :} |
+		UNDER
+			{: RESULT = new WildPat() .mark(left,right); :} |
+		LBRACKET RBRACKET
+			{: RESULT = new ListPat() .mark(left,right); :} |
+		LBRACKET pats:ps RBRACKET
+			{: RESULT = new ListPat(ps) .mark(left,right); :} |
+		LVECTOR RBRACKET
+			{: RESULT = new VectorPat() .mark(left,right); :} |
+		LVECTOR pats:ps RBRACKET
+			{: RESULT = new ListPat(ps) .mark(left,right); :} |
+		LBRACE RBRACE
+			{: RESULT = new RecordPat() .mark(left,right); :} |
+		LBRACE patrecord:r RBRACE
+			{: RESULT = new RecordPat(r) .mark(left,right); :} |
+		LPAREN RPAREN
+			{: RESULT = new UnitPat() .mark(left,right); :} |
+		LPAREN pat:p COMMA pats:ps RPAREN
+			{: RESULT = new TuplePat(prepend(p,ps)) .mark(left,right); :} |
+		LPAREN orpat:op RPAREN
+			{: RESULT = new OrPat(op) .mark(left,right); :} |
+		LPAREN pat:p RPAREN
+			{: RESULT = p .mark(left,right); :};
+
+	patrecord ::=
+		patfield:f {: RESULT = list(f); :} |
+		patfield:f COMMA patrecord:r {: RESULT = prepend(f,r); :} |
+		DOTDOTDOT {: RESULT = list(); :};
+	
+	patfield ::=
+		label:l EQUALS pat:p
+			{: RESULT = new PatField(l,p) .mark(left,right); :} |
+		ident:id constraint:c
+			{: RESULT = new VarPatField(id,c) .mark(left,right); :} |
+		ident:id constraint:c AS pat:p
+			{: RESULT = new VarPatField(id,c,p) .mark(left,right); :};
+	
+	orpat ::=
+		pat:p1 BAR pat:p2 {: RESULT = append(list(p1),p2); :} |
+		orpat:op BAR pat:p {: RESULT = append(op,p); :};
+	
+	pats ::=
+		pat:p {: RESULT = list(p); :} |
+		pats:ps COMMA pat:p {: RESULT = append(ps,p); :};
+
+	atpats ::=
+		atpat:p {: RESULT = list(p); :} |
+		atpats:ps atpat:p {: RESULT = append(ps,p); :};
+
+	pat ::=
+		atpats:ps
+			{: RESULT = new FlatConPat(ps) .mark(left,right); :} |
+		pat:p1 AS pat:p2
+			{: RESULT = new LayeredPat(p1,p2) .mark(left,right); :} |
+		pat:p COLON type:t
+			{: RESULT = new TypedPat(p,t) .mark(left,right); :} |
+		error
+			{: RESULT = new ErrorPat() .mark(left,right); :};
+
+	// Types
+	
+	type ::=
+		typetuple:tt
+			{: RESULT = new TupleType(tt) .mark(left,right); :} |
+		type:t1 ARROW type:t2
+			{: RESULT = new FnType(t1,t2) .mark(left,right); :} |
+		attype:t
+			{: RESULT = t; :} |
+		error
+			{: RESULT = new ErrorType() .mark(left,right); :};
+	
+	attype ::=
+		tyvar:tv
+			{: RESULT = new VarType(tv) .mark(left,right); :} |
+		LBRACE typerecord:tr RBRACE
+			{: RESULT = new RecordType(tr) .mark(left,right); :} |
+		LBRACE RBRACE
+			{: RESULT = new RecordType() .mark(left,right); :} |
+		LPAREN type:t COMMA types:ts RPAREN tycon:tc
+			{: RESULT = new ConType(prepend(t,ts),tc) .mark(left,right); :} |
+		attype:t tycon:tc
+			{: RESULT = new ConType(t,tc) .mark(left,right); :} |
+		tycon:tc
+			{: RESULT = new ConType(tc) .mark(left,right); :} |
+		LPAREN type:t RPAREN
+			{: RESULT = t .mark(left,right); :};
+	
+	tycon ::=
+		qident:id {: RESULT = id; :};
+	
+	typetuple ::=
+		attype:t1 ASTERISK attype:t2 {: RESULT = append(list(t1),t2); :} |
+		typetuple:tt ASTERISK attype:t {: RESULT = append(tt,t); :};
+
+	typerecord ::=
+		typefield:f {: RESULT = list(f); :} |
+		typerecord:r COMMA typefield:f {: RESULT = append(r,f); :};
+				
+	typefield ::= label:l COLON type:t {: RESULT = new TypeField(l,t) .mark(left,right); :};
+	
+	types ::=
+		type:t {: RESULT = list(t); :} |
+		types:ts COMMA type:t {: RESULT = append(ts,t); :};
+
+	// Modules
+	
+	str ::=
+		STRUCT strdecs:sds END
+			{: RESULT = new BaseStr(sds) .mark(left,right); :} |
+		qident2:id
+			{: RESULT = new VarStr(id) .mark(left,right); :} |
+		qident2:id fctargs:fas
+			{: RESULT = new AppStr(id,fas) .mark(left,right); :} |
+		LET strdecs:sds IN str:s END
+			{: RESULT = new LetStr(sds,s) .mark(left,right); :} |
+		str:s COLON sig:sig
+			{: RESULT = new SignedStr(s,sig) .mark(left,right); :} |
+		str:s COLONGT sig:sig
+			{: RESULT = new SignedStr(s,sig,true) .mark(left,right); :} |
+		error
+			{: RESULT = new ErrorStr(); :};
+	
+	fctarg ::=
+		LPAREN str:s RPAREN {: RESULT = s; :} |
+		LPAREN strdecs_:sds RPAREN {: RESULT = new BaseStr(sds) .mark(left,right); :};
+	
+	fctargs ::=
+		fctarg:fa {: RESULT = list(fa); :} |
+		fctargs:fas fctarg:fa {: RESULT = append(fas,fa); :};
+	
+	strdecs ::=
+		
+			{: RESULT = list(); :} |
+		strdecs:sds strdec:sd
+			{: RESULT = append(sds,sd); :} |
+		strdecs:sds SEMIC
+			{: RESULT = sds; :};
+	
+	strdecs_ ::=
+		
+			{: RESULT = list(); :} |
+		strdecs_:sds strdec_:sd
+			{: RESULT = append(sds,sd); :} |
+		strdecs_:sds SEMIC
+			{: RESULT = sds; :};
+	
+	strdec_ ::=
+		dec:d
+			{: RESULT = d; :} |
+		STRUCTURE strbind:sb
+			{: RESULT = new StrDec(sb) .mark(left,right); :} |
+		FUNCTOR fctbind:fb
+			{: RESULT = new FctDec(fb) .mark(left,right); :} |
+		LOCAL strdecs:sd1 IN strdecs:sd2 END
+			{: RESULT = new LocalDec(sd1,sd2) .mark(left,right); :};
+	
+	strdec ::=
+		strdec_:sd
+			{: RESULT = sd; :} |
+		error
+			{: RESULT = new ErrorDec(); :};
+		
+	strbind ::=
+		ident2:id EQUALS str:s
+			{: RESULT = list(new StrBind(id,s) .mark(left,right)); :} |
+		ident2:id COLON sig:sig EQUALS str:s
+			{: RESULT = list(new StrBind(id,s,sig) .mark(left,right)); :} |
+		ident2:id COLONGT sig:sig EQUALS str:s
+			{: RESULT = list(new StrBind(id,s,sig,true) .mark(left,right)); :} |
+		strbind:sb1 AND strbind:sb2
+			{: RESULT = concat(sb1,sb2); :};
+	
+	fctbind ::=
+		ident2:id paramdescs:pds EQUALS str:s
+			{: RESULT = list(new FctBind(id,pds,s) .mark(left,right)); :} |
+		ident2:id paramdescs:pds COLON sig:sig EQUALS str:s
+			{: RESULT = list(new FctBind(id,pds,sig,s) .mark(left,right)); :} |
+		ident2:id paramdescs:pds COLONGT sig:sig EQUALS str:s
+			{: RESULT = list(new FctBind(id,pds,sig,s,true) .mark(left,right)); :} |
+		fctbind:fb1 AND fctbind:fb2
+			{: RESULT = concat(fb1,fb2); :};
+				
+	sig ::=
+		SIG specs:ss END
+			{: RESULT = new BaseSig(ss) .mark(left,right); :} |
+		ident2:id
+			{: RESULT = new VarSig(id) .mark(left,right); :} |
+		sig:s WHERE wherespecs:ws
+			{: RESULT = new WhereSig(s,ws) .mark(left,right); :} |
+		error
+			{: RESULT = new ErrorSig(); :};
+	
+	wherespecs ::=
+		TYPE tyvars:tvs qident2:id EQUALS type:t
+			{: RESULT = list(new TypeWhspec(tvs,id,t) .mark(left,right)); :} |
+		qident2:id1 EQUALS qident2:id2
+			{: RESULT = list(new StructWhspec(id1,id2) .mark(left,right)); :} |
+		wherespecs:ws1 AND wherespecs:ws2
+			{: RESULT = concat(ws1,ws2); :};
+
+	sigbind ::=
+		ident2:id EQUALS sig:s
+			{: RESULT = list(new SigBind(id,s) .mark(left,right)); :} |
+		sigbind:sb1 AND sigbind:sb2
+			{: RESULT = concat(sb1,sb2); :};
+	
+	funsigbind ::=
+		ident2:id paramdescs:pds EQUALS sig:s
+			{: RESULT = list(new FunsigBind(id,pds,s) .mark(left,right)); :} |
+		funsigbind:fsb1 AND funsigbind:fsb2
+			{: RESULT = concat(fsb1,fsb2); :};
+		
+	specs ::=
+			{: RESULT = list(); :} |
+		spec:s specs:ss {: RESULT = prepend(s,ss); :} |
+		SEMIC specs:ss {: RESULT = ss; :};
+
+	spec ::=
+		STRUCTURE strdesc:sd
+			{: RESULT = new StrSpec(sd) .mark(left,right); :} |
+		FUNCTOR fctdesc:fd
+			{: RESULT = new FctSpec(fd) .mark(left,right); :} |
+		DATATYPE datatypebind:db
+			{: RESULT = new DatatypeSpec(db) .mark(left,right); :} |
+		DATATYPE datatypebind:db WITHTYPE typebind:tb
+			{: RESULT = new DatatypeSpec(db,tb) .mark(left,right); :} |
+		TYPE typedesc:td
+			{: RESULT = new TypeSpec(td) .mark(left,right); :} |
+		EQTYPE typedesc:td
+			{: RESULT = new TypeSpec(td,true) .mark(left,right); :} |
+		VAL valdesc:vd
+			{: RESULT = new ValSpec(vd) .mark(left,right); :} |
+		EXCEPTION exndesc:ed
+			{: RESULT = new ExnSpec(ed) .mark(left,right); :} |
+		fixity:f idents2:ids
+			{: RESULT = new FixitySpec(f,ids) .mark(left,right); :} |
+		SHARING sharingdesc:sd
+			{: RESULT = new SharingSpec(sd) .mark(left,right); :} |
+		INCLUDE sig:s
+			{: RESULT = new IncludeSpec(s) .mark(left,right); :} |
+		INCLUDE ident2:id idents2:ids
+			{: RESULT = new IncludeSpec(prepend(id,ids)) .mark(left,right); :};
+	
+	strdesc ::=
+		ident2:id COLON sig:s
+			{: RESULT = list(new StrDesc(id,s) .mark(left,right)); :} |
+		ident2:id1 COLON sig:s EQUALS qident2:id2
+			{: RESULT = list(new StrDesc(id1,s,id2) .mark(left,right)); :} |
+		strdesc:sd1 AND strdesc:sd2
+			{: RESULT = concat(sd1,sd2); :};
+	
+	fctdesc ::=
+		ident2:id1 paramdescs:pds COLON ident2:id2
+			{: RESULT = list(new FctDesc(id1,pds,id2) .mark(left,right)); :} |
+		fctdesc:fd1 AND fctdesc:fd2
+			{: RESULT = concat(fd1,fd2); :};
+	
+	typedesc ::=
+		tyvars:tvs ident:id
+			{: RESULT = list(new TypeDesc(tvs,id) .mark(left,right)); :} |
+		tyvars:tvs ident:id EQUALS type:t
+			{: RESULT = list(new TypeDesc(tvs,id,t) .mark(left,right)); :} |
+		typedesc:td1 AND typedesc:td2
+			{: RESULT = concat(td1,td2); :};
+	
+	valdesc ::=
+		op_ ident:id COLON type:t
+			{: RESULT = list(new ValDesc(id,t) .mark(left,right)); :} |
+		valdesc:vd1 AND valdesc:vd2
+			{: RESULT = concat(vd1,vd2); :};
+
+	exndesc ::=
+		ident:id
+			{: RESULT = list(new ExnDesc(id) .mark(left,right)); :} |
+		ident:id OF type:t
+			{: RESULT = list(new ExnDesc(id,t) .mark(left,right)); :} |
+		exndesc:ed1 AND exndesc:ed2
+			{: RESULT = concat(ed1,ed2); :};
+	
+	sharingdesc ::=
+		patheqn:pe {: RESULT = list(new SharingDesc(pe,true) .mark(left,right)); :} |
+		TYPE patheqn:pe {: RESULT = list(new SharingDesc(pe,false) .mark(left,right)); :} |
+		sharingdesc:sd1 AND sharingdesc:sd2 {: RESULT = concat(sd1,sd2); :};
+
+	patheqn ::=
+		qident2:id1 EQUALS qident2:id2 {: RESULT = append(list(id1),id2); :} |
+		patheqn:pe EQUALS qident2:id {: RESULT = append(pe,id); :};
+	
+	paramdesc ::=
+		ident:id COLON sig:s
+			{: RESULT = new ParamDesc(id,s) .mark(left,right); :} |
+		specs:ss
+			{: RESULT = new ParamDesc(new BaseSig(ss).mark(ssleft,ssright)) .mark(left,right); :};
+	
+	paramdescs ::=
+			{: RESULT = list(); :} |
+		paramdescs:pds LPAREN paramdesc:pd RPAREN {: RESULT = append(pds,pd); :};
+	
+	// Top-level declarations
+	
+	topdecs ::=
+			{: RESULT = list(); :} |
+		exp:e
+			{: RESULT = list(new ExpDec(e) .mark(left,right)); :} |
+		topdecs:tds topdec:td
+			{: RESULT = append(tds,td); :} |
+		topdecs:tds SEMIC
+			{: RESULT = tds; :};
+	
+	topdec ::=
+		strdec_:sd
+			{: RESULT = sd; :} |
+		SIGNATURE sigbind:sb
+			{: RESULT = new SigDec(sb) .mark(left,right); :} |
+		FUNSIG funsigbind:fsb
+			{: RESULT = new FunsigDec(fsb) .mark(left,right); :} |
+		SEMIC exp:e
+			{: RESULT = new ExpDec(e) .mark(left,right); :};
