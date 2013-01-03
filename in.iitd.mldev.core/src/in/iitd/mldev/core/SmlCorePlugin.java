@@ -71,8 +71,8 @@ public class SmlCorePlugin extends Plugin {
 		IDocumentPartitioner partitioner = documentExt.getDocumentPartitioner(SML_PARTITIONING);
 		if (partitioner == null) {
 	    	partitioner = new FastPartitioner(new SmlPartitionScanner(), SmlPartitionScanner.CONTENT_TYPES);
-	    	documentExt.setDocumentPartitioner(SmlCorePlugin.SML_PARTITIONING, partitioner);
 	    	partitioner.connect(document);
+	    	documentExt.setDocumentPartitioner(SmlCorePlugin.SML_PARTITIONING, partitioner);
 		}
 		return partitioner;
 	}
