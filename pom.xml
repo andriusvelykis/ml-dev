@@ -24,14 +24,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
-  
-  <repositories>
-    <repository>
-       <id>eclipse-indigo</id>
-       <layout>p2</layout>
-       <url>http://download.eclipse.org/releases/indigo</url>
-    </repository>
-  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>net.sourceforge.czt.dev</groupId>
+      <artifactId>java-cup-runtime</artifactId>
+      <version>0.11-a-czt01-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
 
   <build>
     <sourceDirectory>${basedir}/src</sourceDirectory>
@@ -49,6 +49,7 @@
         <artifactId>target-platform-configuration</artifactId>
         <version>${tycho.version}</version>
         <configuration>
+          <pomDependencies>consider</pomDependencies>
           <environments>
             <environment>
               <os>linux</os>
@@ -80,5 +81,37 @@
       </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+       <id>eclipse-indigo</id>
+       <layout>p2</layout>
+       <url>http://download.eclipse.org/releases/indigo</url>
+    </repository>
+
+    <repository>
+      <id>snapshots-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>snapshots-plugin-repo</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
 
 </project>
