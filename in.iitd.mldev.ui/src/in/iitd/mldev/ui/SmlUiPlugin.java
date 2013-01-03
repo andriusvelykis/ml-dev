@@ -76,6 +76,7 @@ public class SmlUiPlugin extends AbstractUIPlugin {
 	/** Initializes default values for this plug-in's preferences. */
 	/* TODO: This is deprecated. See the deprecated comment in
 	 * Plugin.initializeDefaultPluginPreferences. */
+	@Override
 	protected void initializeDefaultPluginPreferences () {
 		IPreferenceStore store = getPreferenceStore();
 		store.setDefault(SML_BRACKET_MATCHING_ENABLED, true);

@@ -51,7 +51,8 @@ public class SmlEditor extends TextEditor implements ISmlProgramListener {
 	/** Returns this editor's outline page if requested. (This is how
 	 * Eclipse gets the outline from the editor.) If the request is for
 	 * something else, passes it on to the superclass. */
-	public Object getAdapter (Class adaptTo) {
+	@Override
+	public Object getAdapter (@SuppressWarnings("rawtypes") Class adaptTo) {
         if (adaptTo.equals(IContentOutlinePage.class)) {
             if (outlinePage == null)
             	outlinePage = new SmlContentOutlinePage(this);
@@ -103,8 +104,8 @@ public class SmlEditor extends TextEditor implements ISmlProgramListener {
 		IRegion[] problems = program.getProblems();
 		try {
 			for (int i = 0; i < problems.length; i++) {
-				IDocument document = getDocumentProvider().getDocument(getEditorInput());
-				Map attributes = new HashMap();
+//				IDocument document = getDocumentProvider().getDocument(getEditorInput());
+				Map<String, Object> attributes = new HashMap<String, Object>();
 				attributes.put(IMarker.MESSAGE, "Syntax error");
 				attributes.put(IMarker.CHAR_START, new Integer(problems[i].getOffset()));
 				attributes.put(IMarker.CHAR_END, new Integer(problems[i].getOffset()+problems[i].getLength()));

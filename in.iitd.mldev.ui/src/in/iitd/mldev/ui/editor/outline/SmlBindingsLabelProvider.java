@@ -17,11 +17,11 @@ import org.eclipse.swt.graphics.Image;
 public class SmlBindingsLabelProvider implements ILabelProvider {
 
 	/** Maps the type of a binding, i.e. SmlBinding.getType(), to its icon. */
-	Map images;
+	Map<String, Image> images;
 	
 	/** Creates a new label provider. */
 	public SmlBindingsLabelProvider () {
-		images = new HashMap();
+		images = new HashMap<String, Image>();
 	}
 	
 	/** Returns the icon to display for the given binding. */
@@ -45,8 +45,8 @@ public class SmlBindingsLabelProvider implements ILabelProvider {
 	/** Called when the outline view is being closed.
 	 * Disposes all the icons loaded. */
 	public void dispose () {
-		for (Iterator i = images.values().iterator(); i.hasNext();) {
-			Image image = (Image) i.next();
+		for (Iterator<Image> i = images.values().iterator(); i.hasNext();) {
+			Image image = i.next();
 			image.dispose();
 		}
 	}
