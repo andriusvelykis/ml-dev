@@ -15,6 +15,30 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>net.sourceforge.czt.dev</groupId>
+        <artifactId>cup-maven-plugin</artifactId>
+        <version>1.6-SNAPSHOT</version>
+        <executions>
+          <execution>
+            <phase>generate-sources</phase>
+            <configuration>
+              <sourceDirectory>${project.basedir}/src-cup</sourceDirectory>
+              <className>SmlParser</className>
+              <symbolsName>SmlSymbols</symbolsName>
+              <!--
+              <dumpStates>true</dumpStates>
+              <dumpGrammar>true</dumpGrammar>              
+              <dumpTables>false</dumpTables>
+              -->
+            </configuration>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
       </plugin>
