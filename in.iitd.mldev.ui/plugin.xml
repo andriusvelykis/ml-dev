@@ -5,7 +5,7 @@
         point="org.eclipse.ui.editors">
      <editor
            name="SML Editor"
-           extensions="sml, sig, fun"
+           extensions="sml, sig, fun, ml"
            icon="icons/file.gif"
            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
            class="in.iitd.mldev.ui.editor.SmlEditor"
