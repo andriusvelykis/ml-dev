@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/in.iitd.mldev.feature_1.0.0.qualifier.jar" id="in.iitd.mldev.feature" version="1.0.0.qualifier">
+      <category name="in.iitd.mldev.category"/>
+   </feature>
+   <category-def name="in.iitd.mldev.category" label="ML-Dev">
+      <description>
+         ML-Dev is an Eclipse plug-in that adds support for the Standard ML programming language.
+      </description>
+   </category-def>
+</site>

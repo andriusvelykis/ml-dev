@@ -1,5 +1,13 @@
 *.class
 
+# Maven output dirs
+target/
+
+# Eclipse-specific files (not needed during Maven build)
+.classpath
+.project
+.settings
+
 # Package Files #
 *.jar
 *.war

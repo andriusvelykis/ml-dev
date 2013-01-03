@@ -1,21 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
-<plugin
-   id="in.iitd.mldev.help"
-   name="ML-Dev Help Plug-in"
-   version="0.1.1"
-   provider-name="Rahul Narain">
-
-   <requires>
-      <import plugin="org.eclipse.help"/>
-   </requires>
-
-   <extension
-         point="org.eclipse.help.toc">
-      <toc
-            file="toc.xml"
-            primary="true">
-      </toc>
-   </extension>
+<plugin>
+  <extension
+        point="org.eclipse.help.toc">
+     <toc
+           file="toc.xml"
+           primary="true">
+     </toc>
+  </extension>
 
 </plugin>

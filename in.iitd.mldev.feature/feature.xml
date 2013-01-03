@@ -1,68 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="in.iitd.mldev"
-      label="ML-Dev"
-      version="0.1.1"
-      provider-name="Rahul Narain">
+      id="in.iitd.mldev.feature"
+      label="%featureName"
+      version="1.0.0.qualifier"
+      provider-name="%providerName">
 
-   <install-handler/>
-
-   <description url="http://www.iitd.ac.in/~csu02132/work/mldev/">
-      ML-Dev is an Eclipse plug-in that adds support for the
-Standard ML programming language.
+   <description url="http://github.com/andriusvelykis/ml-dev">
+      %description
    </description>
 
-   <copyright>
-      Copyright (c) 2004 by Rahul Narain under the guidance of Prof. Sanjiva Prasad, Indian Insitute of Technology, New Delhi.
+   <copyright url="%copyrightURL">
+      %copyright
    </copyright>
 
-   <license url="http://www.gnu.org/licenses/gpl.html">
-      This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of
-the License, or (at your option) any later version.
+   <license url="%licenseURL">
+      %license
    </license>
 
    <url>
-      <update label="ML-Dev update site" url="http://www.cse.iitd.ac.in/~csu02132/mldev/updates/"/>
+      <update label="%updateSiteName" url="http://andriusvelykis.github.com/ml-dev/updates/releases/"/>
    </url>
-
-   <requires>
-      <import plugin="org.eclipse.core.resources"/>
-      <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.jface.text"/>
-      <import plugin="org.eclipse.debug.core"/>
-      <import plugin="org.eclipse.debug.ui"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.ui.editors"/>
-      <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="org.eclipse.ui.views"/>
-      <import plugin="org.eclipse.ui.workbench.texteditor"/>
-   </requires>
 
    <plugin
          id="in.iitd.mldev.core"
          download-size="0"
          install-size="0"
-         version="0.1.1"/>
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="in.iitd.mldev.launch"
          download-size="0"
          install-size="0"
-         version="0.1.1"/>
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="in.iitd.mldev.ui"
          download-size="0"
          install-size="0"
-         version="0.1.1"/>
+         version="0.0.0"
+         unpack="false"/>
 
    <plugin
          id="in.iitd.mldev.help"
          download-size="0"
          install-size="0"
-         version="0.1.1"/>
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>
