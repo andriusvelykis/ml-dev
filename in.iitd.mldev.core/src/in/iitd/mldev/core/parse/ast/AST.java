@@ -12,10 +12,10 @@ import java.util.List;
 public abstract class AST {
 
 	/** The offset in the document where the node begins. */
-	public int left = -1;
+	private int left = -1;
 
 	/** The offset in the document where the node ends. */
-	public int right = -1;
+	private int right = -1;
 
 	public int getLeft() {
 		return left;

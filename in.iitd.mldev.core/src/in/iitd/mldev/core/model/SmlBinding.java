@@ -97,8 +97,8 @@ public class SmlBinding {
 	private SmlBinding (String type, Ident ident, AST node) {
 		this.type = type;
 		this.ident = ident;
-		left = node.left;
-		right = node.right;
+		left = node.getLeft();
+		right = node.getRight();
 		children = new ArrayList<SmlBinding>();
 		parent = null;
 	}
@@ -241,7 +241,7 @@ public class SmlBinding {
 				if (fn.name.equals("use")) {
 					StringExp fileExp = (StringExp) exp.exps.get(1);
 					Ident fileIdent = new Ident(fileExp.value);
-					fileIdent.setPos(fileExp.left,fileExp.right);
+					fileIdent.setPos(fileExp.getLeft(),fileExp.getRight());
 					bindings.add(new SmlBinding(USE, fileIdent, dec));
 				}
 			} catch (ClassCastException e) {
