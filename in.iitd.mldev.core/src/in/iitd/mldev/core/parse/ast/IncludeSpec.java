@@ -1,5 +1,6 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
 import java.util.List;
 
 public class IncludeSpec extends Spec {
@@ -7,12 +8,15 @@ public class IncludeSpec extends Spec {
 	public final Sig sig;
 
 	public IncludeSpec(List<Ident> l) {
-		idents = copyList(l);
-		sig = null;
+		this(l, null);
 	}
 
 	public IncludeSpec(Sig s) {
-		idents = null;
+		this(Collections.<Ident>emptyList(), s);
+	}
+	
+	private IncludeSpec(List<Ident> l, Sig s) {
+		idents = copyList(l);
 		sig = s;
 	}
 }
