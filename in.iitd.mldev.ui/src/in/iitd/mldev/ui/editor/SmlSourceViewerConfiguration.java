@@ -72,7 +72,7 @@ public class SmlSourceViewerConfiguration extends SourceViewerConfiguration {
     
 	/** Returns the width that a tab character should be displayed with. */
     public int getTabWidth (ISourceViewer viewer) {
-    	return SmlUiPlugin.getDefault().getPluginPreferences().getInt(SmlUiPlugin.SML_TAB_WIDTH);
+    	return SmlUiPlugin.getDefault().getPreferenceStore().getInt(SmlUiPlugin.SML_TAB_WIDTH);
     }
     
     /** Returns the reconciler that will updates the program model

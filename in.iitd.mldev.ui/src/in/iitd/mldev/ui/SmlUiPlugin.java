@@ -85,7 +85,6 @@ public class SmlUiPlugin extends AbstractUIPlugin {
 		PreferenceConverter.setDefault(store, SML_COMMENT_COLOR, new RGB(0,128,0));
 		store.setDefault(SML_TAB_WIDTH, 2);
 		store.setDefault(SML_MARK_ERRORS, true);
-		savePluginPreferences();
 	}
 
 	/**

@@ -19,8 +19,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.MarkerUtilities;
@@ -42,7 +42,7 @@ public class SmlEditor extends TextEditor implements ISmlProgramListener {
 		super.initializeEditor();
 		setPreferenceStore(new ChainedPreferenceStore(new IPreferenceStore[] {
 				SmlUiPlugin.getDefault().getPreferenceStore(),
-				EditorsPlugin.getDefault().getPreferenceStore()}));
+				EditorsUI.getPreferenceStore()}));
         setSourceViewerConfiguration(new SmlSourceViewerConfiguration(this));
         setRangeIndicator(new DefaultRangeIndicator());
         showOverviewRuler();
@@ -83,7 +83,7 @@ public class SmlEditor extends TextEditor implements ISmlProgramListener {
 	 * after the user disables error marking. */
 	public void programChanged (SmlProgram program) {
 		removeErrorMarkers();
-		if (SmlUiPlugin.getDefault().getPluginPreferences().getBoolean(SmlUiPlugin.SML_MARK_ERRORS))
+		if (SmlUiPlugin.getDefault().getPreferenceStore().getBoolean(SmlUiPlugin.SML_MARK_ERRORS))
 			addErrorMarkers(program);
 	}
 	
