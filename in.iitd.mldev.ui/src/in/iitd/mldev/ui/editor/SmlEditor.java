@@ -119,13 +119,24 @@ public class SmlEditor extends TextEditor implements ISmlProgramListener {
 	 * position in the outline page. */
 	protected void handleCursorPositionChanged () {
 		super.handleCursorPositionChanged();
+		selectInOutline();
+	}
+	
+	private void selectInOutline() {
+		
+		if (outlinePage == null || program == null) {
+			// nothing to select
+			return;
+		}
+		
 		ISourceViewer sourceViewer = getSourceViewer();
 		int offset = widgetOffset2ModelOffset(sourceViewer, sourceViewer.getTextWidget().getCaretOffset());
-		SmlBinding binding = program.getBinding(offset);
-		if (binding != null)
+		SmlBinding binding = getProgram().getBinding(offset);
+		if (binding != null) {
 			outlinePage.select(binding);
-		else
+		} else {
 			outlinePage.deselect();
+		}
 	}
 	
 }
