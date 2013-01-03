@@ -38,10 +38,12 @@ has only been tested on SML/NJ 110.0.7, but it should work on any SML implementa
 
 ## Authors
 
-The ML-Dev plug-in was written by [Rahul Narain][narain] in 2004, with the inspiration and guidance
+-   Original plug-in code by **[Rahul Narain][narain]** in 2004, with the inspiration and guidance
 of [Prof. Sanjiva Prasad][prasad].
+-   Updates and fixes by **[Andrius Velykis][velykis]** (Newcastle University, UK).
 
 [eclipse]: http://www.eclipse.org
 [mldev-guide]: http://www.eecs.berkeley.edu/~narain/projects/mldev/userguide/
 [narain]: http://www.eecs.berkeley.edu/~narain/
 [prasad]: http://www.cse.iitd.ac.in/~sanjiva/
+[velykis]: http://andrius.velykis.lt
