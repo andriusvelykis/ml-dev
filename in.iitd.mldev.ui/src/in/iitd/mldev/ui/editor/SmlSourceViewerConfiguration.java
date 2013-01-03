@@ -14,13 +14,13 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 
 /** Bundles the configuration of an SmlEditor. Sets up its default document
  * partitioning, syntax highlighting, tab width, and the reconciler that
  * updates the program model. Except for the constructor, all the methods are
  * called only by Eclipse to determine the configuration of the editor. */
-public class SmlSourceViewerConfiguration extends SourceViewerConfiguration {
+public class SmlSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
 	/** The editor that this instance configures. */
 	private SmlEditor editor;
