@@ -2,101 +2,104 @@ package in.iitd.mldev.core.scan;
 
 import in.iitd.mldev.core.parse.SmlSymbols;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /** A utility class for recognizing SML keywords.
  * Used by the lexer and for syntax highlighting. */
 public class SmlKeywords {
 
 	/** Internal mapping from strings to Integers for getSym(). */
-	private static Map symMap;
+	private static Map<String, Integer> symMap;
 	
 	/** Returns the symbol number that identifies what kind of token it is.
 	 * Used by SmlLexer for passing to SmlParser. */
 	public static int getSym (String word) {
-		Integer sym = (Integer) getMap().get(word);
+		Integer sym = getMap().get(word);
 		if (sym == null) return SmlSymbols.ID;
 		else return sym.intValue();
 	}
 	
 	/** Returns the list of known SML keywords. */
-	public static String[] getKeywords () {
-		return (String[]) getMap().keySet().toArray(new String[0]);
+	public static Set<String> getKeywords () {
+		return Collections.unmodifiableSet(getMap().keySet());
 	}
 	
-	private static Map getMap () {
-		if (symMap == null)
+	private static Map<String, Integer> getMap () {
+		if (symMap == null) {
 			symMap = createMap();
+		}
 		return symMap;
 	}
 
-	private static Map createMap () {
-		Map map = new HashMap();
+	private static Map<String, Integer> createMap () {
+		Map<String, Integer> map = new HashMap<String, Integer>();
 		
-		map.put("abstype", new Integer(SmlSymbols.ABSTYPE));
-		map.put("and", new Integer(SmlSymbols.AND));
-		map.put("andalso", new Integer(SmlSymbols.ANDALSO));
-		map.put("as", new Integer(SmlSymbols.AS));
-		map.put("case", new Integer(SmlSymbols.CASE));
-		map.put("datatype", new Integer(SmlSymbols.DATATYPE));
-		map.put("do", new Integer(SmlSymbols.DO));
-		map.put("else", new Integer(SmlSymbols.ELSE));
-		map.put("end", new Integer(SmlSymbols.END));
-		map.put("eqtype", new Integer(SmlSymbols.EQTYPE));
-		map.put("exception", new Integer(SmlSymbols.EXCEPTION));
-		map.put("fn", new Integer(SmlSymbols.FN));
-		map.put("fun", new Integer(SmlSymbols.FUN));
-		map.put("functor", new Integer(SmlSymbols.FUNCTOR));
-		map.put("funsig", new Integer(SmlSymbols.FUNSIG));
-		map.put("handle", new Integer(SmlSymbols.HANDLE));
-		map.put("if", new Integer(SmlSymbols.IF));
-		map.put("in", new Integer(SmlSymbols.IN));
-		map.put("include", new Integer(SmlSymbols.INCLUDE));
-		map.put("infix", new Integer(SmlSymbols.INFIX));
-		map.put("infixr", new Integer(SmlSymbols.INFIXR));
-		map.put("lazy", new Integer(SmlSymbols.LAZY));
-		map.put("let", new Integer(SmlSymbols.LET));
-		map.put("local", new Integer(SmlSymbols.LOCAL));
-		map.put("nonfix", new Integer(SmlSymbols.NONFIX));
-		map.put("of", new Integer(SmlSymbols.OF));
-		map.put("op", new Integer(SmlSymbols.OP));
-		map.put("open", new Integer(SmlSymbols.OPEN));
-		map.put("orelse", new Integer(SmlSymbols.ORELSE));
-		map.put("raise", new Integer(SmlSymbols.RAISE));
-		map.put("rec", new Integer(SmlSymbols.REC));
-		map.put("sharing", new Integer(SmlSymbols.SHARING));
-		map.put("sig", new Integer(SmlSymbols.SIG));
-		map.put("signature", new Integer(SmlSymbols.SIGNATURE));
-		map.put("struct", new Integer(SmlSymbols.STRUCT));
-		map.put("structure", new Integer(SmlSymbols.STRUCTURE));
-		map.put("then", new Integer(SmlSymbols.THEN));
-		map.put("type", new Integer(SmlSymbols.TYPE));
-		map.put("val", new Integer(SmlSymbols.VAL));
-		map.put("where", new Integer(SmlSymbols.WHERE));
-		map.put("while", new Integer(SmlSymbols.WHILE));
-		map.put("with", new Integer(SmlSymbols.WITH));
-		map.put("withtype", new Integer(SmlSymbols.WITHTYPE));
+		map.put("abstype", SmlSymbols.ABSTYPE);
+		map.put("and", SmlSymbols.AND);
+		map.put("andalso", SmlSymbols.ANDALSO);
+		map.put("as", SmlSymbols.AS);
+		map.put("case", SmlSymbols.CASE);
+		map.put("datatype", SmlSymbols.DATATYPE);
+		map.put("do", SmlSymbols.DO);
+		map.put("else", SmlSymbols.ELSE);
+		map.put("end", SmlSymbols.END);
+		map.put("eqtype", SmlSymbols.EQTYPE);
+		map.put("exception", SmlSymbols.EXCEPTION);
+		map.put("fn", SmlSymbols.FN);
+		map.put("fun", SmlSymbols.FUN);
+		map.put("functor", SmlSymbols.FUNCTOR);
+		map.put("funsig", SmlSymbols.FUNSIG);
+		map.put("handle", SmlSymbols.HANDLE);
+		map.put("if", SmlSymbols.IF);
+		map.put("in", SmlSymbols.IN);
+		map.put("include", SmlSymbols.INCLUDE);
+		map.put("infix", SmlSymbols.INFIX);
+		map.put("infixr", SmlSymbols.INFIXR);
+		map.put("lazy", SmlSymbols.LAZY);
+		map.put("let", SmlSymbols.LET);
+		map.put("local", SmlSymbols.LOCAL);
+		map.put("nonfix", SmlSymbols.NONFIX);
+		map.put("of", SmlSymbols.OF);
+		map.put("op", SmlSymbols.OP);
+		map.put("open", SmlSymbols.OPEN);
+		map.put("orelse", SmlSymbols.ORELSE);
+		map.put("raise", SmlSymbols.RAISE);
+		map.put("rec", SmlSymbols.REC);
+		map.put("sharing", SmlSymbols.SHARING);
+		map.put("sig", SmlSymbols.SIG);
+		map.put("signature", SmlSymbols.SIGNATURE);
+		map.put("struct", SmlSymbols.STRUCT);
+		map.put("structure", SmlSymbols.STRUCTURE);
+		map.put("then", SmlSymbols.THEN);
+		map.put("type", SmlSymbols.TYPE);
+		map.put("val", SmlSymbols.VAL);
+		map.put("where", SmlSymbols.WHERE);
+		map.put("while", SmlSymbols.WHILE);
+		map.put("with", SmlSymbols.WITH);
+		map.put("withtype", SmlSymbols.WITHTYPE);
 
-		map.put("(", new Integer(SmlSymbols.LPAREN));
-		map.put(")", new Integer(SmlSymbols.RPAREN));
-		map.put("[", new Integer(SmlSymbols.LBRACKET));
-		map.put("]", new Integer(SmlSymbols.RBRACKET));
-		map.put("{", new Integer(SmlSymbols.LBRACE));
-		map.put("}", new Integer(SmlSymbols.RBRACE));
-		map.put(".", new Integer(SmlSymbols.DOT));
-		map.put("...", new Integer(SmlSymbols.DOTDOTDOT));
-		map.put(",", new Integer(SmlSymbols.COMMA));
-		map.put(";", new Integer(SmlSymbols.SEMIC));
-		map.put("_", new Integer(SmlSymbols.UNDER));
-		map.put("|", new Integer(SmlSymbols.BAR));
-		map.put("=", new Integer(SmlSymbols.EQUALS));
-		map.put("=>", new Integer(SmlSymbols.DARROW));
-		map.put("->", new Integer(SmlSymbols.ARROW));
-		map.put("#", new Integer(SmlSymbols.HASH));
-		map.put("*", new Integer(SmlSymbols.ASTERISK));
-		map.put(":", new Integer(SmlSymbols.COLON));
-		map.put(":>", new Integer(SmlSymbols.COLONGT));
+		map.put("(", SmlSymbols.LPAREN);
+		map.put(")", SmlSymbols.RPAREN);
+		map.put("[", SmlSymbols.LBRACKET);
+		map.put("]", SmlSymbols.RBRACKET);
+		map.put("{", SmlSymbols.LBRACE);
+		map.put("}", SmlSymbols.RBRACE);
+		map.put(".", SmlSymbols.DOT);
+		map.put("...", SmlSymbols.DOTDOTDOT);
+		map.put(",", SmlSymbols.COMMA);
+		map.put(";", SmlSymbols.SEMIC);
+		map.put("_", SmlSymbols.UNDER);
+		map.put("|", SmlSymbols.BAR);
+		map.put("=", SmlSymbols.EQUALS);
+		map.put("=>", SmlSymbols.DARROW);
+		map.put("->", SmlSymbols.ARROW);
+		map.put("#", SmlSymbols.HASH);
+		map.put("*", SmlSymbols.ASTERISK);
+		map.put(":", SmlSymbols.COLON);
+		map.put(":>", SmlSymbols.COLONGT);
 
 		return map;
 	}
