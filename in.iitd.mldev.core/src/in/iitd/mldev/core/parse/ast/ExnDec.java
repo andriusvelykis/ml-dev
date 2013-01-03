@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class ExnDec extends Dec {
-	public ExnBind[] bindings;
-	public ExnDec (java.util.List l) {bindings = (ExnBind[])l.toArray(new ExnBind[0]);}
+	public final List<ExnBind> bindings;
+
+	public ExnDec(List<ExnBind> l) {
+		bindings = copyList(l);
+	}
 }

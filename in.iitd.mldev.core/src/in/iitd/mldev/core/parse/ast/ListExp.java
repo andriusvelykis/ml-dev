@@ -1,7 +1,16 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ListExp extends Exp {
-    public Exp[] exps;
-    public ListExp (java.util.List l) {exps = (Exp[]) l.toArray(new Exp[0]);}
-    public ListExp () {exps = new Exp[0];}
+	public final List<Exp> exps;
+
+	public ListExp(List<Exp> l) {
+		exps = copyList(l);
+	}
+
+	public ListExp() {
+		this(Collections.<Exp> emptyList());
+	}
 }

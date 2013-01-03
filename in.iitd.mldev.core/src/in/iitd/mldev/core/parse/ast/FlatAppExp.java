@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FlatAppExp extends Exp {
-    public Exp[] exps;
-    public FlatAppExp (java.util.List es) {exps = (Exp[]) es.toArray(new Exp[0]);}
+	public final List<Exp> exps;
+
+	public FlatAppExp(List<Exp> es) {
+		exps = copyList(es);
+	}
 }

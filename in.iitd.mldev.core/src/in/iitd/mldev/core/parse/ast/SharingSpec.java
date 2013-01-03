@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class SharingSpec extends Spec {
-	public SharingDesc[] descs;
-	public SharingSpec (java.util.List sd) {descs = (SharingDesc[]) sd.toArray(new SharingDesc[0]);}
+	public final List<SharingDesc> descs;
+
+	public SharingSpec(List<SharingDesc> sd) {
+		descs = copyList(sd);
+	}
 }

@@ -1,7 +1,20 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class FctDesc extends Desc {
-	public Ident ident; public ParamDesc[] params; public Ident sig;
-	public FctDesc (Ident id1, Ident id2) {ident = id1; params = new ParamDesc[0]; sig = id2;}
-	public FctDesc (Ident id1, java.util.List pd, Ident id2) {ident = id1; params = (ParamDesc[]) pd.toArray(new ParamDesc[0]); sig = id2;}
+	public final Ident ident;
+	public final List<ParamDesc> params;
+	public final Ident sig;
+
+	public FctDesc(Ident id1, Ident id2) {
+		this(id1, Collections.<ParamDesc> emptyList(), id2);
+	}
+
+	public FctDesc(Ident id1, List<ParamDesc> pd, Ident id2) {
+		ident = id1;
+		params = copyList(pd);
+		sig = id2;
+	}
 }

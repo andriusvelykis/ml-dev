@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FctSpec extends Spec {
-	public FctDesc[] descs;
-	public FctSpec (java.util.List fd) {descs = (FctDesc[]) fd.toArray(new FctDesc[0]);}
+	public final List<FctDesc> descs;
+
+	public FctSpec(List<FctDesc> fd) {
+		descs = copyList(fd);
+	}
 }

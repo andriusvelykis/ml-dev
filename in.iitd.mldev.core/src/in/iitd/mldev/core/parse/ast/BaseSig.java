@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class BaseSig extends Sig {
-	public Spec[] specs;
-	public BaseSig (java.util.List ss) {specs = (Spec[]) ss.toArray(new Spec[0]);}
+	public final List<Spec> specs;
+
+	public BaseSig(List<Spec> ss) {
+		specs = copyList(ss);
+	}
 }

@@ -1,7 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class Match extends AST {
-    public Rule[] rules;
-    public Match (java.util.List rs) {rules = (Rule[]) rs.toArray(new Rule[0]);}
-	public Match mark (int l, int r) {super.setPos(l,r); return this;}
+	public final List<Rule> rules;
+
+	public Match(List<Rule> rs) {
+		rules = copyList(rs);
+	}
 }

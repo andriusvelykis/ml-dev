@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class TupleType extends Type {
-	public Type[] types;
-	public TupleType (java.util.List l) {types = (Type[])l.toArray(new Type[0]);}
+	public final List<Type> types;
+
+	public TupleType(List<Type> l) {
+		types = copyList(l);
+	}
 }

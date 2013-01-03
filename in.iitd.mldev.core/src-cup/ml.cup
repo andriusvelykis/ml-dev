@@ -13,7 +13,7 @@ action code {:
   private <T> List<T> list () {return new ArrayList<T>();}
   
   /** Returns a list containing only the given object. */
-  private <T> List<T> list (T o) {List<T> l = list(); append(l,o); return l;}
+  private <T, S extends T> List<T> list (S o) {List<T> l = list(); append(l,o); return l;}
   
   /** Appends the given object to the end of the list. */
   private <T> List<T> append (List<T> l, T o) {l.add(o); return l;}
@@ -23,6 +23,11 @@ action code {:
   
   /** Concatenates two lists. */
   private <T> List<T> concat (List<T> l1, List<T> l2) {l1.addAll(l2); return l1;}
+  
+  private static <T extends AST> T withPos(T obj, int l, int r) {
+    obj.setPos(l, r);
+	return obj;
+  }
   
 :}
 
@@ -69,18 +74,28 @@ init with {:
 	nonterminal Label label;
 	nonterminal Match match;
 	nonterminal Dec dec, topdec;
-	nonterminal List<Bind> valbind, recvalbind, funbind, typebind,
-		datatypebind, conbind, exnbind;
+	nonterminal List<ValBind> valbind;
+	nonterminal List<RecValBind> recvalbind;
+	nonterminal List<FunBind> funbind;
+	nonterminal List<ConBind> conbind;
+	nonterminal List<ExnBind> exnbind;
+	nonterminal List<TypeBind> typebind;
+	nonterminal List<DatatypeBind> datatypebind;
 	nonterminal List<Clause> clauses;
 	nonterminal Pat pat, atpat;
-	nonterminal Field expfield, patfield, typefield;
+	nonterminal ExpField expfield;
+	nonterminal Field patfield;
+	nonterminal TypeField typefield;
 	nonterminal Type type, attype;
 	nonterminal Fixity fixity;
 	
 	nonterminal Str str, fctarg;
 	nonterminal Sig sig;
 	nonterminal Dec strdec, strdec_;
-	nonterminal List<Bind> strbind, sigbind, fctbind, funsigbind;
+	nonterminal List<StrBind> strbind;
+	nonterminal List<FctBind> fctbind;
+	nonterminal List<SigBind> sigbind;
+	nonterminal List<FunsigBind> funsigbind;
 	nonterminal Spec spec;
 	
 	nonterminal op_;
@@ -90,7 +105,9 @@ init with {:
 	nonterminal List<Ident> qidents1, idents2,
 		patheqn, tyvars, tyvarseq;
 	nonterminal List<String> qualifier;
-	nonterminal List<Field> exprecord, patrecord, typerecord;
+	nonterminal List<ExpField> exprecord;
+	nonterminal List<Field> patrecord;
+	nonterminal List<TypeField> typerecord;
 	nonterminal List<Exp> expseq, exps, appexp;
 	nonterminal List<Rule> rules;
 	nonterminal List<Dec> decs, strdecs, strdecs_, topdecs;
@@ -99,9 +116,14 @@ init with {:
 	nonterminal List<Str> fctargs;
 	nonterminal List<Whspec> wherespecs;
 	nonterminal List<Spec> specs;
-	nonterminal List<Desc> strdesc, fctdesc, typedesc, valdesc, exndesc, sharingdesc,
-		paramdescs;
-	nonterminal Desc paramdesc;
+	nonterminal List<StrDesc> strdesc;
+	nonterminal List<FctDesc> fctdesc;
+	nonterminal List<TypeDesc> typedesc;
+	nonterminal List<ValDesc> valdesc;
+	nonterminal List<ExnDesc> exndesc;
+	nonterminal List<ParamDesc> paramdescs;
+	nonterminal List<SharingDesc> sharingdesc;
+	nonterminal ParamDesc paramdesc;
 
 // Precedences
 
@@ -121,7 +143,7 @@ init with {:
 
 // Grammar
 
-	sml ::= topdecs:ds {: RESULT = new ASTRoot(ds) .mark(dsleft,dsright); :};
+	sml ::= topdecs:ds {: RESULT = withPos(new ASTRoot(ds),dsleft,dsright); :};
 
 	// Basic rules
 	
@@ -133,20 +155,20 @@ init with {:
 		ASTERISK {: RESULT = "*"; :} |
 		EQUALS {: RESULT = "="; :};
 
-	ident ::= ID:id {: RESULT = new Ident(id) .mark(idleft,idright); :};
-	ident1 ::= id1:id {: RESULT = new Ident(id) .mark(idleft,idright); :};
-	ident2 ::= id2:id {: RESULT = new Ident(id) .mark(idleft,idright); :};
+	ident ::= ID:id {: RESULT = withPos(new Ident(id),idleft,idright); :};
+	ident1 ::= id1:id {: RESULT = withPos(new Ident(id),idleft,idright); :};
+	ident2 ::= id2:id {: RESULT = withPos(new Ident(id),idleft,idright); :};
 
-	tyvar ::= TYVAR:tv {: RESULT = new Ident(tv) .mark(tvleft,tvright); :};
+	tyvar ::= TYVAR:tv {: RESULT = withPos(new Ident(tv),tvleft,tvright); :};
 
 	qualifier ::=
 			{: RESULT = list(); :} |
 		qualifier:q ID:id DOT {: RESULT = prepend(id,q); :};
 	
-	qident ::= qualifier:q ID:id {: RESULT = new Ident(q,id) .mark(qleft,idright); :};
-	qident1 ::= qualifier:q id1:id {: RESULT = new Ident(q,id) .mark(qleft,idright); :};
-	qident2 ::= qualifier:q id2:id {: RESULT = new Ident(q,id) .mark(qleft,idright); :};
-	longident2 ::= ID:id1 DOT qualifier:q id2:id2 {: RESULT = new Ident(append(q,id1),id2) .mark(id1left,id2right); :};
+	qident ::= qualifier:q ID:id {: RESULT = withPos(new Ident(q,id),qleft,idright); :};
+	qident1 ::= qualifier:q id1:id {: RESULT = withPos(new Ident(q,id),qleft,idright); :};
+	qident2 ::= qualifier:q id2:id {: RESULT = withPos(new Ident(q,id),qleft,idright); :};
+	longident2 ::= ID:id1 DOT qualifier:q id2:id2 {: RESULT = withPos(new Ident(append(q,id1),id2),id1left,id2right); :};
 
 	qidents1 ::=
 		qident1:id {: RESULT = list(id); :} |
@@ -175,55 +197,55 @@ init with {:
 
 	atexp ::=
 		ident2:id
-			{: RESULT = new VarExp(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarExp(id),idleft,idright); :} |
 		OP:o ident2:id
-			{: RESULT = new VarExp(id, true) .mark(oleft,idright); :} |
+			{: RESULT = withPos(new VarExp(id, true),oleft,idright); :} |
 		longident2:id
-			{: RESULT = new VarExp(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarExp(id),idleft,idright); :} |
 		INT:i
-			{: RESULT = new IntExp(i) .mark(ileft,iright); :} |
+			{: RESULT = withPos(new IntExp(i),ileft,iright); :} |
 		REAL:r
-			{: RESULT = new RealExp(r) .mark(rleft,rright); :} |
+			{: RESULT = withPos(new RealExp(r),rleft,rright); :} |
 		STRING:s
-			{: RESULT = new StringExp(s) .mark(sleft,sright); :} |
+			{: RESULT = withPos(new StringExp(s),sleft,sright); :} |
 		CHAR:c
-			{: RESULT = new CharExp(c) .mark(cleft,cright); :} |
+			{: RESULT = withPos(new CharExp(c),cleft,cright); :} |
 		HASH:h label:l
-			{: RESULT = new SelectorExp(l) .mark(hleft,lright); :} |
+			{: RESULT = withPos(new SelectorExp(l),hleft,lright); :} |
 		LBRACE:l exprecord:er RBRACE:r
-			{: RESULT = new RecordExp(er) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new RecordExp(er),lleft,rright); :} |
 		LBRACE:l RBRACE:r
-			{: RESULT = new RecordExp() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new RecordExp(),lleft,rright); :} |
 		LPAREN:l RPAREN:r
-			{: RESULT = new UnitExp() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new UnitExp(),lleft,rright); :} |
 		LPAREN:l exp:e RPAREN:r
-			{: RESULT = e .mark(lleft,rright); :} |
+			{: RESULT = withPos(e,lleft,rright); :} |
 		LPAREN:l expseq:es RPAREN:r
-			{: RESULT = new SeqExp(es) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new SeqExp(es),lleft,rright); :} |
 		LPAREN:l exp:e COMMA exps:es RPAREN:r
-			{: RESULT = new TupleExp(prepend(e,es)) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new TupleExp(prepend(e,es)),lleft,rright); :} |
 		LBRACKET:l exps:es RBRACKET:r
-			{: RESULT = new ListExp(es) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new ListExp(es),lleft,rright); :} |
 		LBRACKET:l RBRACKET:r
-			{: RESULT = new ListExp() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new ListExp(),lleft,rright); :} |
 		LVECTOR:l exps:es RBRACKET:r
-			{: RESULT = new VectorExp(es) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new VectorExp(es),lleft,rright); :} |
 		LVECTOR:l RBRACKET:r
-			{: RESULT = new VectorExp() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new VectorExp(),lleft,rright); :} |
 		LET:l decs:ds IN exp:e END:en
-			{: RESULT = new LetExp(ds,e) .mark(lleft,enright); :} |
+			{: RESULT = withPos(new LetExp(ds,e),lleft,enright); :} |
 		LET:l decs:ds IN expseq:es END:e
-			{: RESULT = new LetExp(ds, new SeqExp(es).mark(esleft,esright)) .mark(lleft,eright); :};
+			{: RESULT = withPos(new LetExp(ds, withPos(new SeqExp(es),esleft,esright)),lleft,eright); :};
 
 	label ::=
-		ident1:id {: RESULT = new IdentLabel(id) .mark(idleft,idright); :} |
-		INT:i {: RESULT = new IntLabel(i) .mark(ileft,iright); :};
+		ident1:id {: RESULT = withPos(new IdentLabel(id),idleft,idright); :} |
+		INT:i {: RESULT = withPos(new IntLabel(i),ileft,iright); :};
 
 	exprecord ::=
 		expfield:f {: RESULT = list(f); :} |
 		exprecord:r COMMA expfield:f {: RESULT = append(r,f); :};
 				
-	expfield ::= label:l EQUALS exp:e {: RESULT = new ExpField(l,e) .mark(lleft,eright); :};
+	expfield ::= label:l EQUALS exp:e {: RESULT = withPos(new ExpField(l,e),lleft,eright); :};
 
 	expseq ::=
 		exp:e1 SEMIC exp:e2 {: RESULT = append(list(e1),e2); :} |
@@ -239,35 +261,35 @@ init with {:
 
 	exp ::=
 		exp:e HANDLE match:m
-			{: RESULT = new HandleExp(e, m) .mark(eleft,mright); :} |
+			{: RESULT = withPos(new HandleExp(e, m),eleft,mright); :} |
 		exp:e1 ORELSE exp:e2
-			{: RESULT = new OrelseExp(e1,e2) .mark(e1left,e2right); :} |
+			{: RESULT = withPos(new OrelseExp(e1,e2),e1left,e2right); :} |
 		exp:e1 ANDALSO exp:e2
-			{: RESULT = new AndalsoExp(e1,e2) .mark(e1left,e2right); :} |
+			{: RESULT = withPos(new AndalsoExp(e1,e2),e1left,e2right); :} |
 		exp:e COLON type:t
-			{: RESULT = new TypedExp(e,t) .mark(eleft,tright); :} |
+			{: RESULT = withPos(new TypedExp(e,t),eleft,tright); :} |
 		appexp:ae
-			{: RESULT = new FlatAppExp(ae) .mark(aeleft,aeright); :} |
+			{: RESULT = withPos(new FlatAppExp(ae),aeleft,aeright); :} |
 		FN:f match:m
-			{: RESULT = new FnExp(m) .mark(fleft,mright); :} |
+			{: RESULT = withPos(new FnExp(m),fleft,mright); :} |
 		CASE:c exp:e OF match:m
-			{: RESULT = new CaseExp(e,m) .mark(cleft,mright); :} |
+			{: RESULT = withPos(new CaseExp(e,m),cleft,mright); :} |
 		WHILE:w exp:e1 DO exp:e2
-			{: RESULT = new WhileExp(e1,e2) .mark(wleft,e2right); :} |
+			{: RESULT = withPos(new WhileExp(e1,e2),wleft,e2right); :} |
 		IF:i exp:e1 THEN exp:e2 ELSE exp:e3
-			{: RESULT = new IfExp(e1,e2,e3) .mark(ileft,e3right); :} |
+			{: RESULT = withPos(new IfExp(e1,e2,e3),ileft,e3right); :} |
 		RAISE:r exp:e
-			{: RESULT = new RaiseExp(e) .mark(rleft,eright); :} |
+			{: RESULT = withPos(new RaiseExp(e),rleft,eright); :} |
 		error:e
-			{: RESULT = new ErrorExp() .mark(eleft,eright); :};
+			{: RESULT = withPos(new ErrorExp(),eleft,eright); :};
 
 	// Matches
 
-	match ::= rules:rs {: RESULT = new Match(rs) .mark(rsleft,rsright); :};
+	match ::= rules:rs {: RESULT = withPos(new Match(rs),rsleft,rsright); :};
 
 	rules ::=
 		pat:p DARROW exp:e
-			{: RESULT = list(new Rule(p,e) .mark(pleft,eright)); :} |
+			{: RESULT = list(withPos(new Rule(p,e),pleft,eright)); :} |
 		rules:r1 BAR rules:r2
 			{: RESULT = concat(r1,r2); :};
 
@@ -277,156 +299,156 @@ init with {:
 
 			{: RESULT = list(); :} |
 		LOCAL:l decs:ds1 IN decs:ds2 END:e
-			{: RESULT = list(new LocalDec(ds1,ds2) .mark(lleft,eright)); :} |
+			{: RESULT = list(withPos(new LocalDec(ds1,ds2),lleft,eright)); :} |
 		decs:ds dec:d
 			{: RESULT = append(ds,d); :} |
 		decs:ds error:e
-			{: RESULT = append(ds, new ErrorDec() .mark(eleft,eright)); :} |
+			{: RESULT = append(ds, withPos(new ErrorDec(),eleft,eright)); :} |
 		decs:ds SEMIC
 			{: RESULT = ds; :};
 
 	dec ::=
 		VAL:v valbind:vb
-			{: RESULT = new ValDec(vb) .mark(vleft,vbright); :} |
+			{: RESULT = withPos(new ValDec(vb),vleft,vbright); :} |
 		VAL:v tyvarseq:tvs valbind:vb
-			{: RESULT = new ValDec(vb,tvs) .mark(vleft,vbright); :} |
+			{: RESULT = withPos(new ValDec(vb,tvs),vleft,vbright); :} |
 		VAL:v REC recvalbind:rvb
-			{: RESULT = new RecValDec(rvb) .mark(vleft,rvbright); :} |
+			{: RESULT = withPos(new RecValDec(rvb),vleft,rvbright); :} |
 		VAL:v REC tyvarseq:tvs recvalbind:rvb
-			{: RESULT = new RecValDec(rvb,tvs) .mark(vleft,rvbright); :} |
+			{: RESULT = withPos(new RecValDec(rvb,tvs),vleft,rvbright); :} |
 		FUN:f funbind:fb
-			{: RESULT = new FunDec(fb) .mark(fleft,fbright); :} |
+			{: RESULT = withPos(new FunDec(fb),fleft,fbright); :} |
 		TYPE:t typebind:tb
-			{: RESULT = new TypeDec(tb) .mark(tleft,tbright); :} |
+			{: RESULT = withPos(new TypeDec(tb),tleft,tbright); :} |
 		DATATYPE:d datatypebind:db
-			{: RESULT = new DatatypeDec(db) .mark(dleft,dbright); :} |
+			{: RESULT = withPos(new DatatypeDec(db),dleft,dbright); :} |
 		DATATYPE:d datatypebind:db WITHTYPE typebind:tb
-			{: RESULT = new DatatypeDec(db,tb) .mark(dleft,tbright); :} |
+			{: RESULT = withPos(new DatatypeDec(db,tb),dleft,tbright); :} |
 		ABSTYPE:a datatypebind:db WITH decs:ds END:e
-			{: RESULT = new AbstypeDec(db,ds) .mark(aleft,eright); :} |
+			{: RESULT = withPos(new AbstypeDec(db,ds),aleft,eright); :} |
 		ABSTYPE:a datatypebind:db WITHTYPE typebind:tb WITH decs:ds END:e
-			{: RESULT = new AbstypeDec(db,tb,ds) .mark(aleft,eright); :} |
+			{: RESULT = withPos(new AbstypeDec(db,tb,ds),aleft,eright); :} |
 		EXCEPTION:e exnbind:eb
-			{: RESULT = new ExnDec(eb) .mark(eleft,ebright); :} |
+			{: RESULT = withPos(new ExnDec(eb),eleft,ebright); :} |
 		OPEN:o qidents1:ids
-			{: RESULT = new OpenDec(ids) .mark(oleft,idsright); :} |
+			{: RESULT = withPos(new OpenDec(ids),oleft,idsright); :} |
 		fixity:f idents2:ids
-			{: RESULT = new FixityDec(f,ids) .mark(fleft,idsright); :};
+			{: RESULT = withPos(new FixityDec(f,ids),fleft,idsright); :};
 			
 
 	valbind ::=
 		pat:p EQUALS exp:e
-			{: RESULT = list(new ValBind(p,e) .mark(pleft,eright)); :} |
+			{: RESULT = list(withPos(new ValBind(p,e),pleft,eright)); :} |
 		LAZY:l pat:p EQUALS exp:e
-			{: RESULT = list(new ValBind(p,e,true) .mark(lleft,eright)); :} |
+			{: RESULT = list(withPos(new ValBind(p,e,true),lleft,eright)); :} |
 		valbind:vb1 AND valbind:vb2
 			{: RESULT = concat(vb1,vb2); :};
 	
 	recvalbind ::=
 		op_:o ident1:id constraint:c EQUALS exp:e
-			{: RESULT = list(new RecValBind(id,c,e) .mark(oleft,eright)); :} |
+			{: RESULT = list(withPos(new RecValBind(id,c,e),oleft,eright)); :} |
 		LAZY:l op_ ident1:id constraint:c EQUALS exp:e
-			{: RESULT = list(new RecValBind(id,c,e,true) .mark(lleft,eright)); :} |
+			{: RESULT = list(withPos(new RecValBind(id,c,e,true),lleft,eright)); :} |
 		recvalbind:vb1 AND recvalbind:vb2
 			{: RESULT = concat(vb1,vb2); :};
 	
 	funbind ::=
 		clauses:cs
-			{: RESULT = list(new FunBind(cs) .mark(csleft,csright)); :} |
+			{: RESULT = list(withPos(new FunBind(cs),csleft,csright)); :} |
 		LAZY:l clauses:cs
-			{: RESULT = list(new FunBind(cs,true) .mark(lleft,csright)); :} |
+			{: RESULT = list(withPos(new FunBind(cs,true),lleft,csright)); :} |
 		funbind:fb1 AND funbind:fb2
 			{: RESULT = concat(fb1,fb2); :};
 	
 	clauses ::=
 		atpats:ps constraint:c EQUALS exp:e
-			{: RESULT = list(new Clause(ps,c,e) .mark(psleft,eright)); :} |
+			{: RESULT = list(withPos(new Clause(ps,c,e),psleft,eright)); :} |
 		clauses:c1 BAR clauses:c2
 			{: RESULT = concat(c1,c2); :};
 	
 	typebind ::=
 		tyvars:tvs ident:id EQUALS type:t
-			{: RESULT = list(new TypeBind(tvs,id,t) .mark(tvsleft,tright)); :} |
+			{: RESULT = list(withPos(new TypeBind(tvs,id,t),tvsleft,tright)); :} |
 		typebind:tb1 AND typebind:tb2
 			{: RESULT = concat(tb1,tb2); :};
 	
 	datatypebind ::=
 		tyvars:tvs ident:id EQUALS conbind:cbs
-			{: RESULT = list(new DatatypeBind(tvs,id,cbs) .mark(tvsleft,cbsright)); :} |
+			{: RESULT = list(withPos(new DatatypeBind(tvs,id,cbs),tvsleft,cbsright)); :} |
 		LAZY:l tyvars:tvs ident:id EQUALS conbind:cbs
-			{: RESULT = list(new DatatypeBind(tvs,id,cbs,true) .mark(lleft,cbsright)); :} |
+			{: RESULT = list(withPos(new DatatypeBind(tvs,id,cbs,true),lleft,cbsright)); :} |
 		tyvars:tvs ident:id EQUALS DATATYPE tycon:tc
-			{: RESULT = list(new DatatypeBind(tvs,id,tc) .mark(tvsleft,tcright)); :} |
+			{: RESULT = list(withPos(new DatatypeBind(tvs,id,tc),tvsleft,tcright)); :} |
 		LAZY:l tyvars:tvs ident:id EQUALS DATATYPE tycon:tc
-			{: RESULT = list(new DatatypeBind(tvs,id,tc,true) .mark(lleft,tcright)); :} |
+			{: RESULT = list(withPos(new DatatypeBind(tvs,id,tc,true),lleft,tcright)); :} |
 		datatypebind:db1 AND datatypebind:db2
 			{: RESULT = concat(db1,db2); :};
 	
 	conbind ::=
 		op_:o ident2:id
-			{: RESULT = list(new ConBind(id) .mark(oleft,idright)); :} |
+			{: RESULT = list(withPos(new ConBind(id),oleft,idright)); :} |
 		op_:o ident2:id OF type:t
-			{: RESULT = list(new ConBind(id,t) .mark(oleft,tright)); :} |
+			{: RESULT = list(withPos(new ConBind(id,t),oleft,tright)); :} |
 		conbind:cb1 BAR conbind:cb2
 			{: RESULT = concat(cb1,cb2); :};
 	
 	exnbind ::=
 		op_:o ident2:id
-			{: RESULT = list(new ExnBind(id) .mark(oleft,idright));
-				id.mark(idleft,idright); :} |
+			{: RESULT = list(withPos(new ExnBind(id),oleft,idright));
+				id.setPos(idleft,idright); :} |
 		op_:o ident2:id OF type:t
-			{: RESULT = list(new ExnBind(id,t) .mark(oleft,tright)); 
-				id.mark(idleft, idright); t.mark(tleft,tright); :} |
+			{: RESULT = list(withPos(new ExnBind(id,t),oleft,tright)); 
+				id.setPos(idleft, idright); t.setPos(tleft,tright); :} |
 		op_:o ident2:id1 EQUALS qident2:id2
-			{: RESULT = list(new ExnBind(id1,id2) .mark(oleft,id2right));
-				id1.mark(id1left,id1right); id2.mark(id2left,id2right); :} |
+			{: RESULT = list(withPos(new ExnBind(id1,id2),oleft,id2right));
+				id1.setPos(id1left,id1right); id2.setPos(id2left,id2right); :} |
 		exnbind:eb1 AND exnbind:eb2
 			{: RESULT = concat(eb1,eb2); :};
 
 	fixity ::=
-		INFIX:f {: RESULT = new Fixity(Fixity.LEFT) .mark(fleft,fright); :} |
-		INFIX:f INT:i {: RESULT = new Fixity(Fixity.LEFT, i) .mark(fleft,iright); :} |
-		INFIXR:f {: RESULT = new Fixity(Fixity.RIGHT) .mark(fleft,fright); :} |
-		INFIXR:f INT:i {: RESULT = new Fixity(Fixity.RIGHT, i) .mark(fleft,iright); :} |
-		NONFIX:f {: RESULT = new Fixity(Fixity.NONE) .mark(fleft,fright); :};
+		INFIX:f {: RESULT = withPos(new Fixity(Fixity.LEFT),fleft,fright); :} |
+		INFIX:f INT:i {: RESULT = withPos(new Fixity(Fixity.LEFT, i),fleft,iright); :} |
+		INFIXR:f {: RESULT = withPos(new Fixity(Fixity.RIGHT),fleft,fright); :} |
+		INFIXR:f INT:i {: RESULT = withPos(new Fixity(Fixity.RIGHT, i),fleft,iright); :} |
+		NONFIX:f {: RESULT = withPos(new Fixity(Fixity.NONE),fleft,fright); :};
 			
 	// Patterns
 
 	atpat ::=
 		ident1:id
-			{: RESULT = new VarPat(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarPat(id),idleft,idright); :} |
 		OP:o ident2:id
-			{: RESULT = new VarPat(id, true) .mark(oleft,idright); :} |
+			{: RESULT = withPos(new VarPat(id, true),oleft,idright); :} |
 		longident2:id
-			{: RESULT = new VarPat(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarPat(id),idleft,idright); :} |
 		INT:i
-			{: RESULT = new IntPat(i) .mark(ileft,iright); :} |
+			{: RESULT = withPos(new IntPat(i),ileft,iright); :} |
 		STRING:s
-			{: RESULT = new StringPat(s) .mark(sleft,sright); :} |
+			{: RESULT = withPos(new StringPat(s),sleft,sright); :} |
 		CHAR:c
-			{: RESULT = new CharPat(c) .mark(cleft,cright); :} |
+			{: RESULT = withPos(new CharPat(c),cleft,cright); :} |
 		UNDER:u
-			{: RESULT = new WildPat() .mark(uleft,uright); :} |
+			{: RESULT = withPos(new WildPat(),uleft,uright); :} |
 		LBRACKET:l RBRACKET:r
-			{: RESULT = new ListPat() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new ListPat(),lleft,rright); :} |
 		LBRACKET:l pats:ps RBRACKET:r
-			{: RESULT = new ListPat(ps) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new ListPat(ps),lleft,rright); :} |
 		LVECTOR:l RBRACKET:r
-			{: RESULT = new VectorPat() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new VectorPat(),lleft,rright); :} |
 		LVECTOR:l pats:ps RBRACKET:r
-			{: RESULT = new ListPat(ps) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new ListPat(ps),lleft,rright); :} |
 		LBRACE:l RBRACE:r
-			{: RESULT = new RecordPat() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new RecordPat(),lleft,rright); :} |
 		LBRACE:l patrecord:r RBRACE:rb
-			{: RESULT = new RecordPat(r) .mark(lleft,rbright); :} |
+			{: RESULT = withPos(new RecordPat(r),lleft,rbright); :} |
 		LPAREN:l RPAREN:r
-			{: RESULT = new UnitPat() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new UnitPat(),lleft,rright); :} |
 		LPAREN:l pat:p COMMA pats:ps RPAREN:r
-			{: RESULT = new TuplePat(prepend(p,ps)) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new TuplePat(prepend(p,ps)),lleft,rright); :} |
 		LPAREN:l orpat:op RPAREN:r
-			{: RESULT = new OrPat(op) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new OrPat(op),lleft,rright); :} |
 		LPAREN:l pat:p RPAREN:r
-			{: RESULT = p .mark(lleft,rright); :};
+			{: RESULT = withPos(p,lleft,rright); :};
 
 	patrecord ::=
 		patfield:f {: RESULT = list(f); :} |
@@ -435,11 +457,11 @@ init with {:
 	
 	patfield ::=
 		label:l EQUALS pat:p
-			{: RESULT = new PatField(l,p) .mark(lleft,pright); :} |
+			{: RESULT = withPos(new PatField(l,p),lleft,pright); :} |
 		ident:id constraint:c
-			{: RESULT = new VarPatField(id,c) .mark(idleft,cright); :} |
+			{: RESULT = withPos(new VarPatField(id,c),idleft,cright); :} |
 		ident:id constraint:c AS pat:p
-			{: RESULT = new VarPatField(id,c,p) .mark(idleft,pright); :};
+			{: RESULT = withPos(new VarPatField(id,c,p),idleft,pright); :};
 	
 	orpat ::=
 		pat:p1 BAR pat:p2 {: RESULT = append(list(p1),p2); :} |
@@ -455,41 +477,41 @@ init with {:
 
 	pat ::=
 		atpats:ps
-			{: RESULT = new FlatConPat(ps) .mark(psleft,psright); :} |
+			{: RESULT = withPos(new FlatConPat(ps),psleft,psright); :} |
 		pat:p1 AS pat:p2
-			{: RESULT = new LayeredPat(p1,p2) .mark(p1left,p2right); :} |
+			{: RESULT = withPos(new LayeredPat(p1,p2),p1left,p2right); :} |
 		pat:p COLON type:t
-			{: RESULT = new TypedPat(p,t) .mark(pleft,tright); :} |
+			{: RESULT = withPos(new TypedPat(p,t),pleft,tright); :} |
 		error:e
-			{: RESULT = new ErrorPat() .mark(eleft,eright); :};
+			{: RESULT = withPos(new ErrorPat(),eleft,eright); :};
 
 	// Types
 	
 	type ::=
 		typetuple:tt
-			{: RESULT = new TupleType(tt) .mark(ttleft,ttright); :} |
+			{: RESULT = withPos(new TupleType(tt),ttleft,ttright); :} |
 		type:t1 ARROW type:t2
-			{: RESULT = new FnType(t1,t2) .mark(t1left,t2right); :} |
+			{: RESULT = withPos(new FnType(t1,t2),t1left,t2right); :} |
 		attype:t
 			{: RESULT = t; :} |
 		error:e
-			{: RESULT = new ErrorType() .mark(eleft,eright); :};
+			{: RESULT = withPos(new ErrorType(),eleft,eright); :};
 	
 	attype ::=
 		tyvar:tv
-			{: RESULT = new VarType(tv) .mark(tvleft,tvright); :} |
+			{: RESULT = withPos(new VarType(tv),tvleft,tvright); :} |
 		LBRACE:l typerecord:tr RBRACE:r
-			{: RESULT = new RecordType(tr) .mark(lleft,rright); :} |
+			{: RESULT = withPos(new RecordType(tr),lleft,rright); :} |
 		LBRACE:l RBRACE:r
-			{: RESULT = new RecordType() .mark(lleft,rright); :} |
+			{: RESULT = withPos(new RecordType(),lleft,rright); :} |
 		LPAREN:l type:t COMMA types:ts RPAREN tycon:tc
-			{: RESULT = new ConType(prepend(t,ts),tc) .mark(lleft,tcright); :} |
+			{: RESULT = withPos(new ConType(prepend(t,ts),tc),lleft,tcright); :} |
 		attype:t tycon:tc
-			{: RESULT = new ConType(t,tc) .mark(tleft,tcright); :} |
+			{: RESULT = withPos(new ConType(t,tc),tleft,tcright); :} |
 		tycon:tc
-			{: RESULT = new ConType(tc) .mark(tcleft,tcright); :} |
+			{: RESULT = withPos(new ConType(tc),tcleft,tcright); :} |
 		LPAREN:l type:t RPAREN:r
-			{: RESULT = t .mark(lleft,rright); :};
+			{: RESULT = withPos(t,lleft,rright); :};
 	
 	tycon ::=
 		qident:id {: RESULT = id; :};
@@ -502,7 +524,7 @@ init with {:
 		typefield:f {: RESULT = list(f); :} |
 		typerecord:r COMMA typefield:f {: RESULT = append(r,f); :};
 				
-	typefield ::= label:l COLON type:t {: RESULT = new TypeField(l,t) .mark(lleft,tright); :};
+	typefield ::= label:l COLON type:t {: RESULT = withPos(new TypeField(l,t),lleft,tright); :};
 	
 	types ::=
 		type:t {: RESULT = list(t); :} |
@@ -512,23 +534,23 @@ init with {:
 	
 	str ::=
 		STRUCT:s strdecs:sds END:e
-			{: RESULT = new BaseStr(sds) .mark(sleft,eright); :} |
+			{: RESULT = withPos(new BaseStr(sds),sleft,eright); :} |
 		qident2:id
-			{: RESULT = new VarStr(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarStr(id),idleft,idright); :} |
 		qident2:id fctargs:fas
-			{: RESULT = new AppStr(id,fas) .mark(idleft,fasright); :} |
+			{: RESULT = withPos(new AppStr(id,fas),idleft,fasright); :} |
 		LET:l strdecs:sds IN str:s END:e
-			{: RESULT = new LetStr(sds,s) .mark(lleft,eright); :} |
+			{: RESULT = withPos(new LetStr(sds,s),lleft,eright); :} |
 		str:s COLON sig:sig
-			{: RESULT = new SignedStr(s,sig) .mark(sleft,sigright); :} |
+			{: RESULT = withPos(new SignedStr(s,sig),sleft,sigright); :} |
 		str:s COLONGT sig:sig
-			{: RESULT = new SignedStr(s,sig,true) .mark(sleft,sigright); :} |
+			{: RESULT = withPos(new SignedStr(s,sig,true),sleft,sigright); :} |
 		error
 			{: RESULT = new ErrorStr(); :};
 	
 	fctarg ::=
 		LPAREN str:s RPAREN {: RESULT = s; :} |
-		LPAREN:l strdecs_:sds RPAREN:r {: RESULT = new BaseStr(sds) .mark(lleft,rright); :};
+		LPAREN:l strdecs_:sds RPAREN:r {: RESULT = withPos(new BaseStr(sds),lleft,rright); :};
 	
 	fctargs ::=
 		fctarg:fa {: RESULT = list(fa); :} |
@@ -554,11 +576,11 @@ init with {:
 		dec:d
 			{: RESULT = d; :} |
 		STRUCTURE:s strbind:sb
-			{: RESULT = new StrDec(sb) .mark(sleft,sbright); :} |
+			{: RESULT = withPos(new StrDec(sb),sleft,sbright); :} |
 		FUNCTOR:f fctbind:fb
-			{: RESULT = new FctDec(fb) .mark(fleft,fbright); :} |
+			{: RESULT = withPos(new FctDec(fb),fleft,fbright); :} |
 		LOCAL:l strdecs:sd1 IN strdecs:sd2 END:e
-			{: RESULT = new LocalDec(sd1,sd2) .mark(lleft,eright); :};
+			{: RESULT = withPos(new LocalDec(sd1,sd2),lleft,eright); :};
 	
 	strdec ::=
 		strdec_:sd
@@ -568,51 +590,51 @@ init with {:
 		
 	strbind ::=
 		ident2:id EQUALS str:s
-			{: RESULT = list(new StrBind(id,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new StrBind(id,s),idleft,sright)); :} |
 		ident2:id COLON sig:sig EQUALS str:s
-			{: RESULT = list(new StrBind(id,s,sig) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new StrBind(id,s,sig),idleft,sright)); :} |
 		ident2:id COLONGT sig:sig EQUALS str:s
-			{: RESULT = list(new StrBind(id,s,sig,true) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new StrBind(id,s,sig,true),idleft,sright)); :} |
 		strbind:sb1 AND strbind:sb2
 			{: RESULT = concat(sb1,sb2); :};
 	
 	fctbind ::=
 		ident2:id paramdescs:pds EQUALS str:s
-			{: RESULT = list(new FctBind(id,pds,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new FctBind(id,pds,s),idleft,sright)); :} |
 		ident2:id paramdescs:pds COLON sig:sig EQUALS str:s
-			{: RESULT = list(new FctBind(id,pds,sig,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new FctBind(id,pds,sig,s),idleft,sright)); :} |
 		ident2:id paramdescs:pds COLONGT sig:sig EQUALS str:s
-			{: RESULT = list(new FctBind(id,pds,sig,s,true) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new FctBind(id,pds,sig,s,true),idleft,sright)); :} |
 		fctbind:fb1 AND fctbind:fb2
 			{: RESULT = concat(fb1,fb2); :};
 				
 	sig ::=
 		SIG:s specs:ss END:e
-			{: RESULT = new BaseSig(ss) .mark(sleft,eright); :} |
+			{: RESULT = withPos(new BaseSig(ss),sleft,eright); :} |
 		ident2:id
-			{: RESULT = new VarSig(id) .mark(idleft,idright); :} |
+			{: RESULT = withPos(new VarSig(id),idleft,idright); :} |
 		sig:s WHERE wherespecs:ws
-			{: RESULT = new WhereSig(s,ws) .mark(sleft,wsright); :} |
+			{: RESULT = withPos(new WhereSig(s,ws),sleft,wsright); :} |
 		error
 			{: RESULT = new ErrorSig(); :};
 	
 	wherespecs ::=
 		TYPE:ty tyvars:tvs qident2:id EQUALS type:t
-			{: RESULT = list(new TypeWhspec(tvs,id,t) .mark(tyleft,tright)); :} |
+			{: RESULT = list(withPos(new TypeWhspec(tvs,id,t),tyleft,tright)); :} |
 		qident2:id1 EQUALS qident2:id2
-			{: RESULT = list(new StructWhspec(id1,id2) .mark(id1left,id2right)); :} |
+			{: RESULT = list(withPos(new StructWhspec(id1,id2),id1left,id2right)); :} |
 		wherespecs:ws1 AND wherespecs:ws2
 			{: RESULT = concat(ws1,ws2); :};
 
 	sigbind ::=
 		ident2:id EQUALS sig:s
-			{: RESULT = list(new SigBind(id,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new SigBind(id,s),idleft,sright)); :} |
 		sigbind:sb1 AND sigbind:sb2
 			{: RESULT = concat(sb1,sb2); :};
 	
 	funsigbind ::=
 		ident2:id paramdescs:pds EQUALS sig:s
-			{: RESULT = list(new FunsigBind(id,pds,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new FunsigBind(id,pds,s),idleft,sright)); :} |
 		funsigbind:fsb1 AND funsigbind:fsb2
 			{: RESULT = concat(fsb1,fsb2); :};
 		
@@ -623,69 +645,69 @@ init with {:
 
 	spec ::=
 		STRUCTURE:s strdesc:sd
-			{: RESULT = new StrSpec(sd) .mark(sleft,sdright); :} |
+			{: RESULT = withPos(new StrSpec(sd),sleft,sdright); :} |
 		FUNCTOR:f fctdesc:fd
-			{: RESULT = new FctSpec(fd) .mark(fleft,fdright); :} |
+			{: RESULT = withPos(new FctSpec(fd),fleft,fdright); :} |
 		DATATYPE:d datatypebind:db
-			{: RESULT = new DatatypeSpec(db) .mark(dleft,dbright); :} |
+			{: RESULT = withPos(new DatatypeSpec(db),dleft,dbright); :} |
 		DATATYPE:d datatypebind:db WITHTYPE typebind:tb
-			{: RESULT = new DatatypeSpec(db,tb) .mark(dleft,tbright); :} |
+			{: RESULT = withPos(new DatatypeSpec(db,tb),dleft,tbright); :} |
 		TYPE:t typedesc:td
-			{: RESULT = new TypeSpec(td) .mark(tleft,tdright); :} |
+			{: RESULT = withPos(new TypeSpec(td),tleft,tdright); :} |
 		EQTYPE:eq typedesc:td
-			{: RESULT = new TypeSpec(td,true) .mark(eqleft,tdright); :} |
+			{: RESULT = withPos(new TypeSpec(td,true),eqleft,tdright); :} |
 		VAL:v valdesc:vd
-			{: RESULT = new ValSpec(vd) .mark(vleft,vdright); :} |
+			{: RESULT = withPos(new ValSpec(vd),vleft,vdright); :} |
 		EXCEPTION:e exndesc:ed
-			{: RESULT = new ExnSpec(ed) .mark(eleft,edright); :} |
+			{: RESULT = withPos(new ExnSpec(ed),eleft,edright); :} |
 		fixity:f idents2:ids
-			{: RESULT = new FixitySpec(f,ids) .mark(fleft,idsright); :} |
+			{: RESULT = withPos(new FixitySpec(f,ids),fleft,idsright); :} |
 		SHARING:s sharingdesc:sd
-			{: RESULT = new SharingSpec(sd) .mark(sleft,sdright); :} |
+			{: RESULT = withPos(new SharingSpec(sd),sleft,sdright); :} |
 		INCLUDE:i sig:s
-			{: RESULT = new IncludeSpec(s) .mark(ileft,sright); :} |
+			{: RESULT = withPos(new IncludeSpec(s),ileft,sright); :} |
 		INCLUDE:i ident2:id idents2:ids
-			{: RESULT = new IncludeSpec(prepend(id,ids)) .mark(ileft,idsright); :};
+			{: RESULT = withPos(new IncludeSpec(prepend(id,ids)),ileft,idsright); :};
 	
 	strdesc ::=
 		ident2:id COLON sig:s
-			{: RESULT = list(new StrDesc(id,s) .mark(idleft,sright)); :} |
+			{: RESULT = list(withPos(new StrDesc(id,s),idleft,sright)); :} |
 		ident2:id1 COLON sig:s EQUALS qident2:id2
-			{: RESULT = list(new StrDesc(id1,s,id2) .mark(id1left,id2right)); :} |
+			{: RESULT = list(withPos(new StrDesc(id1,s,id2),id1left,id2right)); :} |
 		strdesc:sd1 AND strdesc:sd2
 			{: RESULT = concat(sd1,sd2); :};
 	
 	fctdesc ::=
 		ident2:id1 paramdescs:pds COLON ident2:id2
-			{: RESULT = list(new FctDesc(id1,pds,id2) .mark(id1left,id2right)); :} |
+			{: RESULT = list(withPos(new FctDesc(id1,pds,id2),id1left,id2right)); :} |
 		fctdesc:fd1 AND fctdesc:fd2
 			{: RESULT = concat(fd1,fd2); :};
 	
 	typedesc ::=
 		tyvars:tvs ident:id
-			{: RESULT = list(new TypeDesc(tvs,id) .mark(tvsleft,idright)); :} |
+			{: RESULT = list(withPos(new TypeDesc(tvs,id),tvsleft,idright)); :} |
 		tyvars:tvs ident:id EQUALS type:t
-			{: RESULT = list(new TypeDesc(tvs,id,t) .mark(tvsleft,tright)); :} |
+			{: RESULT = list(withPos(new TypeDesc(tvs,id,t),tvsleft,tright)); :} |
 		typedesc:td1 AND typedesc:td2
 			{: RESULT = concat(td1,td2); :};
 	
 	valdesc ::=
 		op_ ident:id COLON type:t
-			{: RESULT = list(new ValDesc(id,t) .mark(idleft,tright)); :} |
+			{: RESULT = list(withPos(new ValDesc(id,t),idleft,tright)); :} |
 		valdesc:vd1 AND valdesc:vd2
 			{: RESULT = concat(vd1,vd2); :};
 
 	exndesc ::=
 		ident:id
-			{: RESULT = list(new ExnDesc(id) .mark(idleft,idright)); :} |
+			{: RESULT = list(withPos(new ExnDesc(id),idleft,idright)); :} |
 		ident:id OF type:t
-			{: RESULT = list(new ExnDesc(id,t) .mark(idleft,tright)); :} |
+			{: RESULT = list(withPos(new ExnDesc(id,t),idleft,tright)); :} |
 		exndesc:ed1 AND exndesc:ed2
 			{: RESULT = concat(ed1,ed2); :};
 	
 	sharingdesc ::=
-		patheqn:pe {: RESULT = list(new SharingDesc(pe,true) .mark(peleft,peright)); :} |
-		TYPE:t patheqn:pe {: RESULT = list(new SharingDesc(pe,false) .mark(tleft,peright)); :} |
+		patheqn:pe {: RESULT = list(withPos(new SharingDesc(pe,true),peleft,peright)); :} |
+		TYPE:t patheqn:pe {: RESULT = list(withPos(new SharingDesc(pe,false),tleft,peright)); :} |
 		sharingdesc:sd1 AND sharingdesc:sd2 {: RESULT = concat(sd1,sd2); :};
 
 	patheqn ::=
@@ -694,9 +716,9 @@ init with {:
 	
 	paramdesc ::=
 		ident:id COLON sig:s
-			{: RESULT = new ParamDesc(id,s) .mark(idleft,sright); :} |
+			{: RESULT = withPos(new ParamDesc(id,s),idleft,sright); :} |
 		specs:ss
-			{: RESULT = new ParamDesc(new BaseSig(ss).mark(ssleft,ssright)); :};
+			{: RESULT = new ParamDesc(withPos(new BaseSig(ss),ssleft,ssright)); :};
 	
 	paramdescs ::=
 			{: RESULT = list(); :} |
@@ -707,7 +729,7 @@ init with {:
 	topdecs ::=
 			{: RESULT = list(); :} |
 		exp:e
-			{: RESULT = list(new ExpDec(e) .mark(eleft,eright)); :} |
+			{: RESULT = list(withPos(new ExpDec(e),eleft,eright)); :} |
 		topdecs:tds topdec:td
 			{: RESULT = append(tds,td); :} |
 		topdecs:tds SEMIC
@@ -717,8 +739,8 @@ init with {:
 		strdec_:sd
 			{: RESULT = sd; :} |
 		SIGNATURE:s sigbind:sb
-			{: RESULT = new SigDec(sb) .mark(sleft,sbright); :} |
+			{: RESULT = withPos(new SigDec(sb),sleft,sbright); :} |
 		FUNSIG:f funsigbind:fsb
-			{: RESULT = new FunsigDec(fsb) .mark(fleft,fsbright); :} |
+			{: RESULT = withPos(new FunsigDec(fsb),fleft,fsbright); :} |
 		SEMIC:s exp:e
-			{: RESULT = new ExpDec(e) .mark(sleft,eright); :};
+			{: RESULT = withPos(new ExpDec(e),sleft,eright); :};

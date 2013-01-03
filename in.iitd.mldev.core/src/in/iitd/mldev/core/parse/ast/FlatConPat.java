@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FlatConPat extends Pat {
-	public Pat[] pats;
-	public FlatConPat (java.util.List ps) {pats = (Pat[])ps.toArray(new Pat[0]);}
+	public final List<Pat> pats;
+
+	public FlatConPat(List<Pat> ps) {
+		pats = copyList(ps);
+	}
 }

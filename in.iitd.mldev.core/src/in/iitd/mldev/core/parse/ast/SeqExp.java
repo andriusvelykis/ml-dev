@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class SeqExp extends Exp {
-    public Exp[] exps;
-    public SeqExp (java.util.List es) {exps = (Exp[]) es.toArray(new Exp[0]);}
+	public final List<Exp> exps;
+
+	public SeqExp(List<Exp> es) {
+		exps = copyList(es);
+	}
 }

@@ -1,3 +1,4 @@
 package in.iitd.mldev.core.parse.ast;
 
-public class ErrorType extends Type {}
+public class ErrorType extends Type {
+}

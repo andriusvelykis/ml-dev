@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FctDec extends Dec {
-	public FctBind[] bindings;
-	public FctDec (java.util.List l) {bindings = (FctBind[])l.toArray(new FctBind[0]);}
+	public final List<FctBind> bindings;
+
+	public FctDec(List<FctBind> l) {
+		bindings = copyList(l);
+	}
 }

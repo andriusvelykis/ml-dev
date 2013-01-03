@@ -1,9 +1,12 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class LocalDec extends Dec {
-	public Dec[] localdecs, decs;
-	public LocalDec (java.util.List d1, java.util.List d2) {
-		localdecs = (Dec[]) d1.toArray(new Dec[0]);
-		decs = (Dec[]) d2.toArray(new Dec[0]);
+	public final List<Dec> localdecs, decs;
+
+	public LocalDec(List<Dec> d1, List<Dec> d2) {
+		localdecs = copyList(d1);
+		decs = copyList(d2);
 	}
 }

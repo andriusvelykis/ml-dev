@@ -1,9 +1,14 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class TypeBind extends Bind {
-	public Ident[] tyvars; public Ident ident; public Type type;
-	public TypeBind (java.util.List tvs, Ident id, Type t) {
-		tyvars = (Ident[]) tvs.toArray(new Ident[0]);
+	public final List<Ident> tyvars;
+	public final Ident ident;
+	public final Type type;
+
+	public TypeBind(List<Ident> tvs, Ident id, Type t) {
+		tyvars = copyList(tvs);
 		ident = id;
 		type = t;
 	}

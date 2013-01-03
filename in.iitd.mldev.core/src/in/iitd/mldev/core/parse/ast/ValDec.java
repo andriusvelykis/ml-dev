@@ -1,13 +1,18 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class ValDec extends Dec {
-	public ValBind[] bindings; public Ident[] tyvars;
-	public ValDec (java.util.List vbs) {
-		bindings = (ValBind[])vbs.toArray(new ValBind[0]);
+	public final List<ValBind> bindings;
+	public final List<Ident> tyvars;
+
+	public ValDec(List<ValBind> vbs) {
+		bindings = copyList(vbs);
 		tyvars = null;
 	}
-	public ValDec (java.util.List vbs, java.util.List tvs) {
-		bindings = (ValBind[])vbs.toArray(new ValBind[0]);
-		tyvars = (Ident[])tvs.toArray(new Ident[0]);
+
+	public ValDec(List<ValBind> vbs, List<Ident> tvs) {
+		bindings = copyList(vbs);
+		tyvars = copyList(tvs);
 	}
 }

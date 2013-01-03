@@ -1,8 +1,22 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ConType extends Type {
-	public Type[] types; public Ident ident;
-	public ConType (java.util.List l, Ident id) {types = (Type[])l.toArray(new Type[0]); ident = id;}
-	public ConType (Type t, Ident id) {types = new Type[]{t}; ident = id;}
-	public ConType (Ident id) {types = new Type[0]; ident = id;}
+	public final List<Type> types;
+	public final Ident ident;
+
+	public ConType(List<Type> l, Ident id) {
+		types = copyList(l);
+		ident = id;
+	}
+
+	public ConType(Type t, Ident id) {
+		this(Collections.singletonList(t), id);
+	}
+
+	public ConType(Ident id) {
+		this(Collections.<Type> emptyList(), id);
+	}
 }
