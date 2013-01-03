@@ -1,7 +1,16 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class RecordExp extends Exp {
-    public ExpField[] fields;
-    public RecordExp (java.util.List r) {fields = (ExpField[]) r.toArray(new ExpField[0]);}
-	public RecordExp () {fields = new ExpField[0];}
+	public final List<ExpField> fields;
+
+	public RecordExp(List<ExpField> r) {
+		fields = copyList(r);
+	}
+
+	public RecordExp() {
+		this(Collections.<ExpField> emptyList());
+	}
 }

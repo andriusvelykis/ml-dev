@@ -67,7 +67,7 @@ import in.iitd.mldev.core.parse.ast.VectorPat;
 import in.iitd.mldev.core.parse.ast.WhereSig;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -89,7 +89,7 @@ public class SmlBinding {
 	private String type;
 	private Ident ident;
 	private int left, right;
-	private List children;
+	private List<SmlBinding> children;
 	private SmlBinding parent;
 	
 	/** The constructor is private.
@@ -97,16 +97,16 @@ public class SmlBinding {
 	private SmlBinding (String type, Ident ident, AST node) {
 		this.type = type;
 		this.ident = ident;
-		left = node.left;
-		right = node.right;
-		children = new ArrayList();
+		left = node.getLeft();
+		right = node.getRight();
+		children = new ArrayList<SmlBinding>();
 		parent = null;
 	}
 	
-	private void setChildren (List children) {
+	private void setChildren (List<SmlBinding> children) {
 		this.children = children;
-		for (Iterator i = children.iterator(); i.hasNext();) {
-			((SmlBinding) i.next()).setParent(this);
+		for (SmlBinding child : children) {
+			child.setParent(this);
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class SmlBinding {
 	 * A datatype binding's children are its constructors;
 	 * a module's children are the fields it contains;
 	 * other types of bindings don't have children. */
-	public SmlBinding[] getChildren () {return (SmlBinding[]) children.toArray(new SmlBinding[0]);}
+	public SmlBinding[] getChildren () {return children.toArray(new SmlBinding[0]);}
 	/** Returns the binding which this binding is a child of,
 	 * or null if this is a top-level binding. */
 	public SmlBinding getParent () {return parent;}
@@ -159,10 +159,13 @@ public class SmlBinding {
 	public static final String FUNSIG = "funsig";
 	
 	/** Returns all the bindings found in the given parse tree. */
-	public static List getBindings (ASTRoot parseTree) {
-		List bindings = new ArrayList();
-		for (int i = 0; i < parseTree.decs.length; i++)
-			bindings.addAll(DecHelper.getDecBindings(parseTree.decs[i]));
+	public static List<SmlBinding> getBindings (ASTRoot parseTree) {
+		List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+		
+		for (Dec dec : parseTree.decs) {
+			bindings.addAll(DecHelper.getDecBindings(dec));
+		}
+		
 		return bindings;
 	}
 	
@@ -170,7 +173,7 @@ public class SmlBinding {
 	
 	private static class DecHelper {
 	
-		public static List getDecBindings (Dec dec) {
+		public static List<SmlBinding> getDecBindings (Dec dec) {
 			if (dec instanceof AbstypeDec) return getAbstypeBindings((AbstypeDec)dec);
 			if (dec instanceof DatatypeDec) return getDatatypeBindings((DatatypeDec)dec);
 			if (dec instanceof ExnDec) return getExnBindings((ExnDec)dec);
@@ -185,45 +188,60 @@ public class SmlBinding {
 			if (dec instanceof StrDec) return getStrBindings((StrDec)dec);
 			if (dec instanceof TypeDec) return getTypeBindings((TypeDec)dec);
 			if (dec instanceof ValDec) return getValBindings((ValDec)dec);
-			return new ArrayList();
+			return Collections.emptyList();
 		}
 	
-		private static List getAbstypeBindings (AbstypeDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getDatatypeBinding(dec.bindings[i],true));
-			for (int i = 0; i < dec.typebinds.length; i++)
-				bindings.add(BindHelper.getTypeBinding(dec.typebinds[i]));
-			for (int i = 0; i < dec.decs.length; i++)
-				bindings.addAll(getDecBindings(dec.decs[i]));
+		private static List<SmlBinding> getAbstypeBindings (AbstypeDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (DatatypeBind bind : dec.bindings) {
+				bindings.add(BindHelper.getDatatypeBinding(bind,true));
+			}
+			
+			for (TypeBind bind : dec.typebinds) {
+				bindings.add(BindHelper.getTypeBinding(bind));
+			}
+			
+			for (Dec d : dec.decs) {
+				bindings.addAll(getDecBindings(d));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getDatatypeBindings (DatatypeDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getDatatypeBinding(dec.bindings[i],false));
-			for (int i = 0; i < dec.typebinds.length; i++)
-				bindings.add(BindHelper.getTypeBinding(dec.typebinds[i]));
+		private static List<SmlBinding> getDatatypeBindings (DatatypeDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (DatatypeBind bind : dec.bindings) {
+				bindings.add(BindHelper.getDatatypeBinding(bind,false));
+			}
+			
+			for (TypeBind bind : dec.typebinds) {
+				bindings.add(BindHelper.getTypeBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getExnBindings (ExnDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getExnBinding(dec.bindings[i]));
+		private static List<SmlBinding> getExnBindings (ExnDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (ExnBind bind : dec.bindings) {
+				bindings.add(BindHelper.getExnBinding(bind));
+			}
+			
 			return bindings;
 		}
 		
-		private static List getExpBindings (ExpDec dec) {
-			List bindings = new ArrayList();
+		private static List<SmlBinding> getExpBindings (ExpDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
 			try {
 				FlatAppExp exp = (FlatAppExp) dec.exp;
-				Ident fn = ((VarExp) exp.exps[0]).ident;
+				Ident fn = ((VarExp) exp.exps.get(0)).ident;
 				if (fn.name.equals("use")) {
-					StringExp fileExp = (StringExp) exp.exps[1];
+					StringExp fileExp = (StringExp) exp.exps.get(1);
 					Ident fileIdent = new Ident(fileExp.value);
-					fileIdent.mark(fileExp.left,fileExp.right);
+					fileIdent.setPos(fileExp.getLeft(),fileExp.getRight());
 					bindings.add(new SmlBinding(USE, fileIdent, dec));
 				}
 			} catch (ClassCastException e) {
@@ -231,73 +249,103 @@ public class SmlBinding {
 			return bindings;
 		}
 	
-		private static List getFctBindings (FctDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getFctBinding(dec.bindings[i]));
+		private static List<SmlBinding> getFctBindings (FctDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (FctBind bind : dec.bindings) {
+				bindings.add(BindHelper.getFctBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getFunBindings (FunDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getFunBinding(dec.bindings[i]));
+		private static List<SmlBinding> getFunBindings (FunDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (FunBind bind : dec.bindings) {
+				bindings.add(BindHelper.getFunBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getFunsigBindings (FunsigDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getFunsigBinding(dec.bindings[i]));
+		private static List<SmlBinding> getFunsigBindings (FunsigDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (FunsigBind bind : dec.bindings) {
+				bindings.add(BindHelper.getFunsigBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getLocalBindings (LocalDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.decs.length; i++)
-				bindings.addAll(getDecBindings(dec.decs[i]));
+		private static List<SmlBinding> getLocalBindings (LocalDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (Dec d : dec.decs) {
+				bindings.addAll(getDecBindings(d));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getOpenBindings (OpenDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.idents.length; i++)
-				bindings.add(new SmlBinding(OPEN, dec.idents[i], dec));
+		private static List<SmlBinding> getOpenBindings (OpenDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (Ident ident : dec.idents) {
+				bindings.add(new SmlBinding(OPEN, ident, dec));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getRecValBindings (RecValDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getRecValBinding(dec.bindings[i]));
+		private static List<SmlBinding> getRecValBindings (RecValDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (RecValBind bind : dec.bindings) {
+				bindings.add(BindHelper.getRecValBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getSigBindings (SigDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getSigBinding(dec.bindings[i]));
+		private static List<SmlBinding> getSigBindings (SigDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (SigBind bind : dec.bindings) {
+				bindings.add(BindHelper.getSigBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getStrBindings (StrDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getStrBinding(dec.bindings[i]));
+		private static List<SmlBinding> getStrBindings (StrDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (StrBind bind : dec.bindings) {
+				bindings.add(BindHelper.getStrBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getTypeBindings (TypeDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.add(BindHelper.getTypeBinding(dec.bindings[i]));
+		private static List<SmlBinding> getTypeBindings (TypeDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (TypeBind bind : dec.bindings) {
+				bindings.add(BindHelper.getTypeBinding(bind));
+			}
+			
 			return bindings;
 		}
 	
-		private static List getValBindings (ValDec dec) {
-			List bindings = new ArrayList();
-			for (int i = 0; i < dec.bindings.length; i++)
-				bindings.addAll(BindHelper.getValBinding(dec.bindings[i]));
+		private static List<SmlBinding> getValBindings (ValDec dec) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			
+			for (ValBind bind : dec.bindings) {
+				bindings.addAll(BindHelper.getValBinding(bind));
+			}
+			
 			return bindings;
 		}
 		
@@ -316,9 +364,12 @@ public class SmlBinding {
 		public static SmlBinding getDatatypeBinding (DatatypeBind db, boolean abs) {
 			SmlBinding binding = new SmlBinding(TYPE, db.ident, db);
 			if (!abs) {
-				List cons = new ArrayList();
-				for (int i = 0; i < db.cons.length; i++)
-					cons.add(getConBinding(db.cons[i]));
+				List<SmlBinding> cons = new ArrayList<SmlBinding>();
+				
+				for (ConBind bind : db.cons) {
+					cons.add(BindHelper.getConBinding(bind));
+				}
+				
 				binding.setChildren(cons);
 			}
 			return binding;
@@ -360,11 +411,14 @@ public class SmlBinding {
 			return new SmlBinding(TYPE, tb.ident, tb);
 		}
 		
-		public static List getValBinding (ValBind vb) {
-			List bindings = new ArrayList();
-			List idents = PatHelper.getPatIdents(vb.pat);
-			for (Iterator i = idents.iterator(); i.hasNext();)
-				bindings.add(new SmlBinding(VAL, (Ident) i.next(), vb));
+		public static List<SmlBinding> getValBinding (ValBind vb) {
+			List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+			List<Ident> idents = PatHelper.getPatIdents(vb.pat);
+			
+			for (Ident ident : idents) {
+				bindings.add(new SmlBinding(VAL, ident, vb));
+			}
+			
 			return bindings;
 		}
 	
@@ -372,7 +426,7 @@ public class SmlBinding {
 
 	private static class PatHelper {
 	
-		public static List getPatIdents (Pat pat) {
+		public static List<Ident> getPatIdents (Pat pat) {
 			if (pat instanceof FlatConPat) return getFlatConIdents((FlatConPat)pat);
 			if (pat instanceof LayeredPat) return getLayeredIdents((LayeredPat)pat);
 			if (pat instanceof ListPat) return getListIdents((ListPat)pat);
@@ -382,115 +436,137 @@ public class SmlBinding {
 			if (pat instanceof TypedPat) return getTypedIdents((TypedPat)pat);
 			if (pat instanceof VarPat) return getVarIdents((VarPat)pat);
 			if (pat instanceof VectorPat) return getVectorIdents((VectorPat)pat);
-			return new ArrayList();
+			return Collections.emptyList();
 		}
 		
-		private static List getFlatConIdents (FlatConPat pat) {
-			return getPatIdents(pat.pats[pat.pats.length-1]);
+		private static List<Ident> getFlatConIdents (FlatConPat pat) {
+			return getPatIdents(pat.pats.get(pat.pats.size() - 1));
 		}
 		
-		private static List getLayeredIdents (LayeredPat pat) {
-			List idents = getPatIdents(pat.pat1);
+		private static List<Ident> getLayeredIdents (LayeredPat pat) {
+			List<Ident> idents = getPatIdents(pat.pat1);
 			idents.addAll(getPatIdents(pat.pat2));
 			return idents;
 		}
 		
-		private static List getListIdents (ListPat pat) {
-			List idents = new ArrayList();
-			for (int i = 0; i < pat.pats.length; i++) {
-				idents.addAll(getPatIdents(pat.pats[i]));
+		private static List<Ident> getListIdents (ListPat pat) {
+			List<Ident> idents = new ArrayList<Ident>();
+			
+			for (Pat p : pat.pats) {
+				idents.addAll(getPatIdents(p));
 			}
+			
 			return idents;
 		}
 		
-		private static List getOrIdents (OrPat pat) {
-			List idents = new ArrayList();
-			for (int i = 0; i < pat.pats.length; i++) {
-				idents.addAll(getPatIdents(pat.pats[i]));
+		private static List<Ident> getOrIdents (OrPat pat) {
+			List<Ident> idents = new ArrayList<Ident>();
+			
+			for (Pat p : pat.pats) {
+				idents.addAll(getPatIdents(p));
 			}
+			
 			return idents;
 		}
 		
-		private static List getRecordIdents (RecordPat pat) {
-			List idents = new ArrayList();
-			for (int i = 0; i < pat.fields.length; i++) {
-				Field field = pat.fields[i];
-				if (pat.fields[i] instanceof PatField)
+		private static List<Ident> getRecordIdents (RecordPat pat) {
+			List<Ident> idents = new ArrayList<Ident>();
+			
+			for (Field field : pat.fields) {
+				if (field instanceof PatField) {
 					idents.addAll(getPatIdents(((PatField)field).pat));
-				if (pat.fields[i] instanceof VarPatField) {
+				}
+				if (field instanceof VarPatField) {
 					idents.add(((VarPatField)field).ident);
-					if (((VarPatField)field).aspat != null)
+					if (((VarPatField)field).aspat != null) {
 						idents.addAll(getPatIdents(((VarPatField)field).aspat));
+					}
 				}
 			}
 			return idents;
 		}
 		
-		private static List getTupleIdents (TuplePat pat) {
-			List idents = new ArrayList();
-			for (int i = 0; i < pat.pats.length; i++) {
-				idents.addAll(getPatIdents(pat.pats[i]));
+		private static List<Ident> getTupleIdents (TuplePat pat) {
+			List<Ident> idents = new ArrayList<Ident>();
+			
+			for (Pat p : pat.pats) {
+				idents.addAll(getPatIdents(p));
 			}
+			
 			return idents;
 		}
 		
-		private static List getTypedIdents (TypedPat pat) {
+		private static List<Ident> getTypedIdents (TypedPat pat) {
 			return getPatIdents(pat.pat);
 		}
 		
-		private static List getVarIdents (VarPat pat) {
-			List idents = new ArrayList();
-			idents.add(pat.ident);
-			return idents;
+		private static List<Ident> getVarIdents (VarPat pat) {
+			return Collections.singletonList(pat.ident);
 		}
 		
-		private static List getVectorIdents (VectorPat pat) {
-			List idents = new ArrayList();
-			for (int i = 0; i < pat.pats.length; i++) {
-				idents.addAll(getPatIdents(pat.pats[i]));
+		private static List<Ident> getVectorIdents (VectorPat pat) {
+			List<Ident> idents = new ArrayList<Ident>();
+			
+			for (Pat p : pat.pats) {
+				idents.addAll(getPatIdents(p));
 			}
+			
 			return idents;
 		}
 	
 		public static Ident getIdentOfFun (FunBind fb) {
-			return (Ident) getPatIdents(fb.clauses[0].pats[0]).get(0);
+			return getPatIdents(fb.clauses.get(0).pats.get(0)).get(0);
 		}
 		
 	}
 
 	private static class ModuleHelper {
 	
-		public static List getStrBindings (Str str) {
+		public static List<SmlBinding> getStrBindings (Str str) {
 			if (str instanceof BaseStr) {
-				List children = new ArrayList();
-				for (int i = 0; i < ((BaseStr)str).decs.length; i++)
-					children.addAll(DecHelper.getDecBindings(((BaseStr)str).decs[i]));
+				List<SmlBinding> children = new ArrayList<SmlBinding>();
+				
+				for (Dec dec : ((BaseStr)str).decs) {
+					children.addAll(DecHelper.getDecBindings(dec));
+				}
+					
 				return children;
 			}
-			if (str instanceof LetStr)
+			
+			if (str instanceof LetStr) {
 				return getStrBindings(((LetStr)str).str);
-			if (str instanceof SignedStr)
+			}
+			
+			if (str instanceof SignedStr) {
 				return getStrBindings(((SignedStr)str).str);
-			return new ArrayList();
+			}
+			
+			return Collections.emptyList();
 		}
 		
-		public static List getSigBindings (Sig sig) {
+		public static List<SmlBinding> getSigBindings (Sig sig) {
 			if (sig instanceof BaseSig) {
-				List children = new ArrayList();
-				for (int i = 0; i < ((BaseSig)sig).specs.length; i++)
-					children.addAll(SpecHelper.getSpecBindings(((BaseSig)sig).specs[i]));
+				List<SmlBinding> children = new ArrayList<SmlBinding>();
+				
+				for (Spec spec : ((BaseSig)sig).specs) {
+					children.addAll(SpecHelper.getSpecBindings(spec));
+				}
+				
 				return children;
 			}
-			if (sig instanceof WhereSig)
+			
+			if (sig instanceof WhereSig) {
 				return getSigBindings(((WhereSig)sig).sig);
-			return new ArrayList();
+			}
+			
+			return Collections.emptyList();
 		}
 	
 	}
 	
 	private static class SpecHelper {
 		
-			public static List getSpecBindings (Spec spec) {
+			public static List<SmlBinding> getSpecBindings (Spec spec) {
 				if (spec instanceof DatatypeSpec) return getDatatypeBindings((DatatypeSpec)spec);
 				if (spec instanceof ExnSpec) return getExnBindings((ExnSpec)spec);
 				if (spec instanceof FctSpec) return getFctBindings((FctSpec)spec);
@@ -498,57 +574,80 @@ public class SmlBinding {
 				if (spec instanceof StrSpec) return getStrBindings((StrSpec)spec);
 				if (spec instanceof TypeSpec) return getTypeBindings((TypeSpec)spec);
 				if (spec instanceof ValSpec) return getValBindings((ValSpec)spec);
-				return new ArrayList();
+				return Collections.emptyList();
 			}
 		
-			private static List getDatatypeBindings (DatatypeSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.bindings.length; i++)
-					bindings.add(BindHelper.getDatatypeBinding(spec.bindings[i],false));
-				for (int i = 0; i < spec.typebinds.length; i++)
-					bindings.add(BindHelper.getTypeBinding(spec.typebinds[i]));
+			private static List<SmlBinding> getDatatypeBindings (DatatypeSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (DatatypeBind bind : spec.bindings) {
+					bindings.add(BindHelper.getDatatypeBinding(bind,false));
+				}
+				
+				for (TypeBind bind : spec.typebinds) {
+					bindings.add(BindHelper.getTypeBinding(bind));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getExnBindings (ExnSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.descs.length; i++)
-					bindings.add(DescHelper.getExnBinding(spec.descs[i]));
+			private static List<SmlBinding> getExnBindings (ExnSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (ExnDesc bind : spec.descs) {
+					bindings.add(DescHelper.getExnBinding(bind));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getFctBindings (FctSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.descs.length; i++)
-					bindings.add(DescHelper.getFctBinding(spec.descs[i]));
+			private static List<SmlBinding> getFctBindings (FctSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (FctDesc bind : spec.descs) {
+					bindings.add(DescHelper.getFctBinding(bind));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getIncludeSpecBindings (IncludeSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.idents.length; i++)
-					bindings.add(new SmlBinding(OPEN, spec.idents[i], spec));
+			private static List<SmlBinding> getIncludeSpecBindings (IncludeSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (Ident ident : spec.idents) {
+					bindings.add(new SmlBinding(OPEN, ident, spec));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getStrBindings (StrSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.descs.length; i++)
-					bindings.add(DescHelper.getStrBinding(spec.descs[i]));
+			private static List<SmlBinding> getStrBindings (StrSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (StrDesc bind : spec.descs) {
+					bindings.add(DescHelper.getStrBinding(bind));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getTypeBindings (TypeSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.descs.length; i++)
-					bindings.add(DescHelper.getTypeBinding(spec.descs[i]));
+			private static List<SmlBinding> getTypeBindings (TypeSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (TypeDesc bind : spec.descs) {
+					bindings.add(DescHelper.getTypeBinding(bind));
+				}
+				
 				return bindings;
 			}
 		
-			private static List getValBindings (ValSpec spec) {
-				List bindings = new ArrayList();
-				for (int i = 0; i < spec.descs.length; i++)
-					bindings.add(DescHelper.getValBinding(spec.descs[i]));
+			private static List<SmlBinding> getValBindings (ValSpec spec) {
+				List<SmlBinding> bindings = new ArrayList<SmlBinding>();
+				
+				for (ValDesc bind : spec.descs) {
+					bindings.add(DescHelper.getValBinding(bind));
+				}
+				
 				return bindings;
 			}
 			

@@ -1,7 +1,14 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FixitySpec extends Spec {
-	public Fixity fixity; public Ident[] idents;
-	public FixitySpec (Fixity f, java.util.List ids) {fixity = f; idents = (Ident[])ids.toArray(new Ident[0]);}
+	public final Fixity fixity;
+	public final List<Ident> idents;
+
+	public FixitySpec(Fixity f, List<Ident> ids) {
+		fixity = f;
+		idents = copyList(ids);
+	}
 
 }

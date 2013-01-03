@@ -86,7 +86,7 @@ public class SmlContentOutlinePage extends ContentOutlinePage implements ISmlPro
 			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 			if (selection.size() != 1) return;
 			Ident ident = ((SmlBinding) selection.getFirstElement()).getIdent();
-			editor.selectAndReveal(ident.left, ident.right - ident.left);
+			editor.selectAndReveal(ident.getLeft(), ident.getRight() - ident.getLeft());
 		}
 	}
     

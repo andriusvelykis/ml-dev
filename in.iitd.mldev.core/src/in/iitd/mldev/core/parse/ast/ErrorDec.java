@@ -1,3 +1,4 @@
 package in.iitd.mldev.core.parse.ast;
 
-public class ErrorDec extends Dec {}
+public class ErrorDec extends Dec {
+}

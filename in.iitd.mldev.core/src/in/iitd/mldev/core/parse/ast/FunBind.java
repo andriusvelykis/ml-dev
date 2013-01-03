@@ -1,8 +1,17 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FunBind extends Bind {
-	public Clause[] clauses;
+	public final List<Clause> clauses;
 	public boolean lazy = false;
-	public FunBind (java.util.List cs) {clauses = (Clause[])cs.toArray(new Clause[0]);}
-	public FunBind (java.util.List cs, boolean l) {clauses = (Clause[])cs.toArray(new Clause[0]); lazy = l;}
+
+	public FunBind(List<Clause> cs) {
+		clauses = copyList(cs);
+	}
+
+	public FunBind(List<Clause> cs, boolean l) {
+		clauses = copyList(cs);
+		lazy = l;
+	}
 }

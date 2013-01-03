@@ -10,7 +10,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentPartitioner;
 import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.ITokenScanner;
+
 
 /**
  * The lexer used by the SmlParser.
@@ -124,15 +124,15 @@ public class SmlLexer implements Scanner {
 		return Float.valueOf(s.replace('~','-'));
 	}
 
-	/** Helper function for debugging. */
-	private void debugToken (IToken token, ITokenScanner scanner) {
-		String tokenMsg = "";
-		if (token.isEOF()) tokenMsg = "eof";
-		if (token.isUndefined()) tokenMsg = "undefined";
-		if (token.isWhitespace()) tokenMsg = "whitespace";
-		if (token.isOther()) tokenMsg = "data '"+token.getData()+"'";
-		String scannerMsg = scanner.getTokenOffset()+"+"+scanner.getTokenLength();
-		System.out.println("token "+tokenMsg+" at "+scannerMsg);
-	}
+//	/** Helper function for debugging. */
+//	private void debugToken (IToken token, ITokenScanner scanner) {
+//		String tokenMsg = "";
+//		if (token.isEOF()) tokenMsg = "eof";
+//		if (token.isUndefined()) tokenMsg = "undefined";
+//		if (token.isWhitespace()) tokenMsg = "whitespace";
+//		if (token.isOther()) tokenMsg = "data '"+token.getData()+"'";
+//		String scannerMsg = scanner.getTokenOffset()+"+"+scanner.getTokenLength();
+//		System.out.println("token "+tokenMsg+" at "+scannerMsg);
+//	}
 
 }

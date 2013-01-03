@@ -1,7 +1,13 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class SharingDesc extends Desc {
-	public Ident[] idents;
+	public final List<Ident> idents;
 	public boolean strs;
-	public SharingDesc (java.util.List ids, boolean s) {idents = (Ident[]) ids.toArray(new Ident[0]); strs = s;}
+
+	public SharingDesc(List<Ident> ids, boolean s) {
+		idents = copyList(ids);
+		strs = s;
+	}
 }

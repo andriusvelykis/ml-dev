@@ -5,8 +5,8 @@ import in.iitd.mldev.core.parse.ast.ASTRoot;
 import in.iitd.mldev.core.scan.SmlLexer;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import java_cup.runtime.Symbol;
 
@@ -24,9 +24,10 @@ import org.eclipse.jface.text.Region;
 public class SmlProgram {
 	
 	/** The document containing the program source. */
-	private IDocument document;
+	private final IDocument document;
 	/** The list of listeners registered to be notified of updates. */
-	private List listeners;
+	private final List<ISmlProgramListener> listeners =
+			new CopyOnWriteArrayList<ISmlProgramListener>();
 	
 	/** Every SmlProgram keeps its own lexer and parser. */
 	private SmlLexer lexer;
@@ -36,15 +37,14 @@ public class SmlProgram {
 	/** The parse tree. */
 	private ASTRoot parseTree;
 	/** The list of bindings. */
-	private List bindings;
+	private List<SmlBinding> bindings;
 	/** The list of problems. */
-	private List problems;
+	private List<IRegion> problems;
 
 	/** Creates a SmlProgram attached to the given document.
 	 * The SmlProgram does not update itself when the document changes. */
 	public SmlProgram (IDocument document) {
 		this.document = document;
-		listeners = new ArrayList();
 	}
 	
 	/** Returns the parse tree of the program. */
@@ -59,7 +59,7 @@ public class SmlProgram {
 	public SmlBinding[] getBindings () {
 		if (bindings == null)
 			update();
-		return (SmlBinding[]) bindings.toArray(new SmlBinding[0]);
+		return bindings.toArray(new SmlBinding[0]);
 	}
 	
 	/** Returns the regions where problems were found in the program.
@@ -67,7 +67,7 @@ public class SmlProgram {
 	public IRegion[] getProblems () {
 		if (problems == null)
 			update();
-		return (IRegion[]) problems.toArray(new IRegion[0]);
+		return problems.toArray(new IRegion[0]);
 	}
 	
 	/** Updates the representation of the program. This method should
@@ -86,11 +86,10 @@ public class SmlProgram {
 		if (parser == null)
 			parser = new SmlParser();
 		parser.setScanner(lexer);
-		problems = new ArrayList();
+		problems = new ArrayList<IRegion>();
 		try {
 			Symbol result = parser.parse();
-			for (Iterator i = parser.parseErrors.iterator(); i.hasNext(); ) {
-				Symbol error = (Symbol) i.next();
+			for (Symbol error : parser.parseErrors) {
 				problems.add(new Region(error.left,error.right-error.left));
 			}
 			parseTree = (ASTRoot) result.value;
@@ -107,8 +106,9 @@ public class SmlProgram {
 	public void removeListener (ISmlProgramListener listener) {listeners.remove(listener);}
 	/** Notifies all listeners that the program has been updated. */
 	private void fireModelChanged () {
-		for (Iterator i = listeners.iterator(); i.hasNext(); )
-			((ISmlProgramListener) i.next()).programChanged(this);
+		for (ISmlProgramListener listener : listeners) {
+			listener.programChanged(this);
+		}
 	}
 
 	/** Returns the deepest identifier bound at the given offset
@@ -121,8 +121,7 @@ public class SmlProgram {
 	/** Recursively searches among the given bindings and their children
 	 * to find the deepest binding containing the given offset. */
 	private SmlBinding getDeepestBinding (int offset, SmlBinding[] bindings) {
-		for (int i = 0; i < bindings.length; i++) {
-			SmlBinding binding = bindings[i];
+		for (SmlBinding binding : bindings) {
 			if (containsOffset(binding,offset)) {
 				SmlBinding childBinding = getDeepestBinding(offset, binding.getChildren());
 				if (childBinding != null)

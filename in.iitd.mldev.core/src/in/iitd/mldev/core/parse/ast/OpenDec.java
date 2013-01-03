@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class OpenDec extends Dec {
-	public Ident[] idents;
-	public OpenDec (java.util.List l) {idents = (Ident[])l.toArray(new Ident[0]);}
+	public final List<Ident> idents;
+
+	public OpenDec(List<Ident> l) {
+		idents = copyList(l);
+	}
 }

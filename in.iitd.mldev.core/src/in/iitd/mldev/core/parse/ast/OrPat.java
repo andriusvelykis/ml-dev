@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class OrPat extends Pat {
-	public Pat[] pats;
-	public OrPat (java.util.List l) {pats = (Pat[]) l.toArray(new Pat[0]);}
+	public final List<Pat> pats;
+
+	public OrPat(List<Pat> l) {
+		pats = copyList(l);
+	}
 }

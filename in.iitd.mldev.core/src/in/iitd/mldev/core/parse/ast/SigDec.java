@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class SigDec extends Dec {
-	public SigBind[] bindings;
-	public SigDec (java.util.List sbs) {bindings = (SigBind[]) sbs.toArray(new SigBind[0]);}
+	public final List<SigBind> bindings;
+
+	public SigDec(List<SigBind> sbs) {
+		bindings = copyList(sbs);
+	}
 }

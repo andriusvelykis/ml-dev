@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class FunsigDec extends Dec {
-	public FunsigBind[] bindings;
-	public FunsigDec (java.util.List fsb) {bindings = (FunsigBind[])fsb.toArray(new FunsigBind[0]);}
+	public final List<FunsigBind> bindings;
+
+	public FunsigDec(List<FunsigBind> fsb) {
+		bindings = copyList(fsb);
+	}
 }

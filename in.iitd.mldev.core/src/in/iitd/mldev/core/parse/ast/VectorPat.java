@@ -1,7 +1,16 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class VectorPat extends Pat {
-    public Pat[] pats;
-    public VectorPat (java.util.List l) {pats = (Pat[]) l.toArray(new Pat[0]);}
-    public VectorPat () {pats = new Pat[0];}
+	public final List<Pat> pats;
+
+	public VectorPat(List<Pat> l) {
+		pats = copyList(l);
+	}
+
+	public VectorPat() {
+		this(Collections.<Pat> emptyList());
+	}
 }

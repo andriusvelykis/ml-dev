@@ -1,10 +1,19 @@
 package in.iitd.mldev.core.parse.ast;
 
-/** The root of the parse tree.
- * Its children are the top-level declarations in the program. */
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * The root of the parse tree. Its children are the top-level declarations in the program.
+ */
 public class ASTRoot extends AST {
-	public Dec[] decs;
-	public ASTRoot () {decs = new Dec[0];}
-	public ASTRoot (java.util.List ds) {decs = (Dec[]) ds.toArray(new Dec[0]);}
-	public ASTRoot mark (int l, int r) {super.setPos(l,r); return this;}
+	public final List<Dec> decs;
+
+	public ASTRoot() {
+		this(Collections.<Dec> emptyList());
+	}
+
+	public ASTRoot(List<Dec> ds) {
+		decs = copyList(ds);
+	}
 }

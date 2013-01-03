@@ -1,7 +1,16 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class ListPat extends Pat {
-    public Pat[] pats;
-    public ListPat (java.util.List l) {pats = (Pat[]) l.toArray(new Pat[0]);}
-    public ListPat () {pats = new Pat[0];}
+	public final List<Pat> pats;
+
+	public ListPat(List<Pat> l) {
+		pats = copyList(l);
+	}
+
+	public ListPat() {
+		this(Collections.<Pat> emptyList());
+	}
 }

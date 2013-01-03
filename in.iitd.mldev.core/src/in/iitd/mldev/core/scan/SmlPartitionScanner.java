@@ -11,7 +11,7 @@ import org.eclipse.jface.text.rules.Token;
 /**
  * A partition scanner that separates a document into comments, strings, and
  * normal SML code. This is useful for syntax highlighting and bracket matching.
- * Partitioning of a document is done by creating a DefaultPartitioner that
+ * Partitioning of a document is done by creating a FastPartitioner that
  * uses this scanner to identify the partitions. The partitioner must be
  * connected to the document, and vice versa.
  * See SmlCorePlugin.getPartitioner(). 

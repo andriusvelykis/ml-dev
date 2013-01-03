@@ -1,6 +1,11 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class ValSpec extends Spec {
-	public ValDesc[] descs;
-	public ValSpec (java.util.List vd) {descs = (ValDesc[]) vd.toArray(new ValDesc[0]);}
+	public final List<ValDesc> descs;
+
+	public ValSpec(List<ValDesc> vd) {
+		descs = copyList(vd);
+	}
 }

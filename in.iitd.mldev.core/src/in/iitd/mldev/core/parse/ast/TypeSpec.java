@@ -1,8 +1,17 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.List;
+
 public class TypeSpec extends Spec {
-	public TypeDesc[] descs;
+	public final List<TypeDesc> descs;
 	public boolean eqtype = false;
-	public TypeSpec (java.util.List td) {descs = (TypeDesc[]) td.toArray(new TypeDesc[0]);}
-	public TypeSpec (java.util.List td, boolean e) {descs = (TypeDesc[]) td.toArray(new TypeDesc[0]); eqtype = e;}
+
+	public TypeSpec(List<TypeDesc> td) {
+		descs = copyList(td);
+	}
+
+	public TypeSpec(List<TypeDesc> td, boolean e) {
+		descs = copyList(td);
+		eqtype = e;
+	}
 }

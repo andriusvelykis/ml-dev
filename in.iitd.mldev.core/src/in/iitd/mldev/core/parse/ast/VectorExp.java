@@ -1,7 +1,16 @@
 package in.iitd.mldev.core.parse.ast;
 
+import java.util.Collections;
+import java.util.List;
+
 public class VectorExp extends Exp {
-    public Exp[] exps;
-    public VectorExp (java.util.List l) {exps = (Exp[]) l.toArray(new Exp[0]);}
-    public VectorExp () {exps = new Exp[0];}
+	public final List<Exp> exps;
+
+	public VectorExp(List<Exp> l) {
+		exps = copyList(l);
+	}
+
+	public VectorExp() {
+		this(Collections.<Exp> emptyList());
+	}
 }

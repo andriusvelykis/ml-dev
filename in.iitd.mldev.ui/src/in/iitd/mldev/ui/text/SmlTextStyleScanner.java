@@ -19,9 +19,10 @@ public class SmlTextStyleScanner extends BufferedRuleBasedScanner {
 		super();
 		IToken keywordToken = new Token(data);
 		WordRule alphaWords = new WordRule(new AlphaWordDetector(), new Token(null));
-		String[] keywords = SmlKeywords.getKeywords();
-		for (int i = 0; i < keywords.length; i++)
-			alphaWords.addWord(keywords[i], keywordToken);
+		
+		for (String keyword : SmlKeywords.getKeywords()) {
+			alphaWords.addWord(keyword, keywordToken);
+		}
 		setRules(new IRule[]{alphaWords});
 	}
 
