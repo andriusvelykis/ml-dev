@@ -29,7 +29,7 @@ Eclipse.
 
 Use the following URL to install ML-Dev plug-ins via Eclipse [_Update Manager_][update-manager].
 
-[`http://andriusvelykis.github.com/ml-dev/updates/nightly/`]( http://andriusvelykis.github.com/ml-dev/updates/nightly/ )
+[**`http://andriusvelykis.github.com/ml-dev/updates/nightly/`**]( http://andriusvelykis.github.com/ml-dev/updates/nightly/ )
 
 [update-manager]: http://www.vogella.com/articles/Eclipse/article.html#updatemanager
 
