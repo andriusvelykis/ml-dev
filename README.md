@@ -25,6 +25,15 @@ Eclipse.
 -   User guide integrated into Eclipse help
 
 
+## Installation
+
+Use the following URL to install ML-Dev plug-ins via Eclipse [_Update Manager_][update-manager].
+
+[`http://andriusvelykis.github.com/ml-dev/updates/nightly/`]( http://andriusvelykis.github.com/ml-dev/updates/nightly/ )
+
+[update-manager]: http://www.vogella.com/articles/Eclipse/article.html#updatemanager
+
+
 ## Usage
 
 ML-Dev _User Guide_ contains important information for running SML in Eclipse. The User Guide can
