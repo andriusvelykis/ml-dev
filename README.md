@@ -37,7 +37,7 @@ Use the following URL to install ML-Dev plug-ins via Eclipse [_Update Manager_][
 ## Usage
 
 ML-Dev _User Guide_ contains important information for running SML in Eclipse. The User Guide can
-be accessed from the Eclipse help system (_Help \> Help Contents_). You can also
+be accessed from the Eclipse help system **(Help > Help Contents)**. You can also
 [read the User Guide online][mldev-guide].
 
 Running SML programs requires an interactive SML interpreter installed on your system. The plug-in
