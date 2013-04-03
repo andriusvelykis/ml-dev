@@ -45,6 +45,21 @@ has only been tested on SML/NJ 110.0.7, but it should work on any SML implementa
 `use` primitive.
 
 
+## Contributing
+
+Please report bugs, feature requests, questions and other issues using the GitHub tracker:
+
+[`http://github.com/andriusvelykis/ml-dev/issues`](http://github.com/andriusvelykis/ml-dev/issues)
+
+You can also contribute to the project by forking the repository and sending [pull requests][pull-req] with your changes. We welcome various contributions!
+
+ML-Dev is built on Eclipse platform using Java programming language. It is built using Maven and Eclipse Tycho. To build everything, run a standard Maven command:
+
+    mvn clean install
+
+[pull-req]: https://help.github.com/articles/using-pull-requests/
+
+
 ## Authors
 
 -   Original plug-in code by **[Rahul Narain][narain]** in 2004, with the inspiration and guidance
