@@ -18,7 +18,7 @@
    </license>
 
    <url>
-      <update label="%updateSiteName" url="http://andriusvelykis.github.com/ml-dev/updates/releases/"/>
+      <update label="%updateSiteName" url="http://andriusvelykis.github.com/ml-dev/updates/nightly/"/>
    </url>
 
    <plugin
